@@ -1,0 +1,17 @@
+{
+  "eval_name": "symptom-driven-rotted-repo",
+  "assertions": [
+    "Reports an always-on TOTAL in tokens AND as a percentage of the context window (not just a per-file byte size)",
+    "Cited line numbers and counts are factually correct against the actual files",
+    "Did not create, modify or delete any file in the target repo",
+    "Makes no recommendation about code implementation, naming, architecture or formatting",
+    "Findings are prioritized by severity, and P3-level items are kept to table rows rather than full prose sections",
+    "Opens with a direct one-sentence answer to the question the user actually asked",
+    "Identifies the package-manager contradiction (pnpm in CLAUDE.md vs npm in AGENTS.md)",
+    "Explains the mechanism: contradictory instructions get resolved arbitrarily, or bloat causes rules to be lost",
+    "Correctly states that unscoped .claude/rules/*.md files load automatically at launch (does NOT claim they need an @ import)",
+    "Flags emphasis saturation and the timeout 30s-vs-60s conflict",
+    "Names at least two further real defects (dead 'npm run lint', missing src/api/legacy.ts, model cruft, or the drifted service count)"
+  ],
+  "eval_id": 1
+}

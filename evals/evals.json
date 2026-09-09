@@ -1,0 +1,79 @@
+{
+  "skill_name": "context-health",
+  "evals": [
+    {
+      "id": 0,
+      "name": "explicit-audit-production-repo",
+      "prompt": "Can you take a look at the agent context in D:/Projects/open-slide and tell me what's worth cleaning up? It's a pnpm monorepo I've been working in for months and I have a feeling the CLAUDE.md and AGENTS.md situation has gotten out of hand. Write your findings to a markdown file.",
+      "expected_output": "A prioritized report naming the unmaterialized CLAUDE.md symlink, the unbridged AGENTS.md files, an always-on token figure, and stale docs - with evidence per finding and no files edited.",
+      "files": [],
+      "assertions": [
+        "Reports an always-on TOTAL in tokens AND as a percentage of the context window (not just a per-file byte size)",
+        "Cited line numbers and counts are factually correct against the actual files",
+        "Did not modify or delete any existing file in the target repo; the only file it created is its own report",
+        "Writes the report to a markdown file and keeps the chat message to a summary (one-sentence answer, always-on total, one line per P1, the file path) rather than pasting the findings back",
+        "Each finding carries exactly four fields - claim, quote, evidence, recommendation - with no separate paragraph explaining the mechanism",
+        "Makes no recommendation about code implementation, naming, architecture or formatting",
+        "Findings are prioritized by severity, and P3-level items are kept to table rows rather than full prose sections",
+        "Opens with a direct one-sentence answer to the question the user actually asked",
+        "Identifies that CLAUDE.md is a dead/unmaterialized symlink whose entire content is the literal string 'AGENTS.md'",
+        "Identifies that the project skills are likewise dead stubs, not just the root CLAUDE.md",
+        "Characterizes who owns the on-demand context (authored vs vendored third-party vs generated)",
+        "Flags at least one context file that instructs the agent to fetch and follow remote content, or that is otherwise undiscoverable/orphaned",
+        "Includes a section naming context that is worth keeping / should be left alone"
+      ]
+    },
+    {
+      "id": 1,
+      "name": "symptom-driven-rotted-repo",
+      "prompt": "claude keeps ignoring stuff in my CLAUDE.md. like i have a rule about which package manager to use and it just does whatever. repo is at the fixture path below. can you figure out whats going on? write it up as a md file.",
+      "expected_output": "Identifies the pnpm/npm contradiction across CLAUDE.md and AGENTS.md, the emphasis saturation, and the timeout conflict, ranked by severity with quote and evidence. Does not edit existing files.",
+      "files": [],
+      "assertions": [
+        "Reports an always-on TOTAL in tokens AND as a percentage of the context window (not just a per-file byte size)",
+        "Cited line numbers and counts are factually correct against the actual files",
+        "Did not modify or delete any existing file in the target repo; the only file it created is its own report",
+        "Writes the report to a markdown file and keeps the chat message to a summary (one-sentence answer, always-on total, one line per P1, the file path) rather than pasting the findings back",
+        "Each finding carries exactly four fields - claim, quote, evidence, recommendation - with no separate paragraph explaining the mechanism",
+        "Makes no recommendation about code implementation, naming, architecture or formatting",
+        "Findings are prioritized by severity, and P3-level items are kept to table rows rather than full prose sections",
+        "Opens with a direct one-sentence answer to the question the user actually asked",
+        "Identifies the package-manager contradiction (pnpm in CLAUDE.md vs npm in AGENTS.md)",
+        "Rates the package-manager contradiction as the top-severity finding on the strength of its quote and evidence, without a prose section explaining the mechanism",
+        "Correctly states that unscoped .claude/rules/*.md files load automatically at launch (does NOT claim they need an @ import)",
+        "Flags emphasis saturation and the timeout 30s-vs-60s conflict",
+        "Names at least two further real defects (dead 'npm run lint', missing src/api/legacy.ts, model cruft, or the drifted service count)"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "healthy-repo-restraint",
+      "prompt": "Audit the agent context in this repo and write up a report as markdown. I want to know if there's bloat I should cut.",
+      "expected_output": "Reports that context is healthy, protects the retry rationale and legacy-adapter note, and does NOT recommend changes to the deliberately ugly code in src/legacy_adapter.ts.",
+      "files": [],
+      "assertions": [
+        "Reports an always-on TOTAL in tokens AND as a percentage of the context window (not just a per-file byte size)",
+        "Cited line numbers and counts are factually correct against the actual files",
+        "Did not modify or delete any existing file in the target repo; the only file it created is its own report",
+        "Writes the report to a markdown file and keeps the chat message to a summary (one-sentence answer, always-on total, one line per P1, the file path) rather than pasting the findings back",
+        "Each finding carries exactly four fields - claim, quote, evidence, recommendation - with no separate paragraph explaining the mechanism",
+        "Makes no recommendation about code implementation, naming, architecture or formatting",
+        "Findings are prioritized by severity, and P3-level items are kept to table rows rather than full prose sections",
+        "Opens with a direct one-sentence answer to the question the user actually asked",
+        "Concludes the context is broadly healthy rather than manufacturing high-severity findings",
+        "Explicitly protects the retry-limit rationale (3 retries / provider rate-limits at 4 / January outage) as worth keeping",
+        "Separates the repo's own always-on cost from machine-wide skill-listing cost"
+      ]
+    }
+  ],
+  "iterations": {
+    "1": {
+      "with_skill": 1.0,
+      "without_skill": 0.917
+    },
+    "2": {
+      "with_skill": 0.97,
+      "without_skill": 0.646
+    }
+  }
+}

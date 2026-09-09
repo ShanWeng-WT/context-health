@@ -1,0 +1,14 @@
+{
+  "eval_name": "explicit-audit-production-repo",
+  "assertions": [
+    "Reports a concrete always-on token figure for the repo (a number, not a vague claim)",
+    "Identifies that CLAUDE.md is a dead/unmaterialized symlink whose entire content is the literal string 'AGENTS.md'",
+    "Flags that the AGENTS.md file(s) are not actually read by Claude Code because nothing bridges them",
+    "Every reported finding cites a specific file path",
+    "Did not create, modify or delete any tracked file in D:/Projects/open-slide",
+    "Includes a section naming context that is worth keeping / should be left alone",
+    "Makes no recommendation about code implementation, naming, architecture or formatting",
+    "Findings are prioritized by severity rather than listed flat"
+  ],
+  "eval_id": 0
+}

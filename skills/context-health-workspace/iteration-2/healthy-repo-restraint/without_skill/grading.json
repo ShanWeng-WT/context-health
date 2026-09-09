@@ -1,0 +1,52 @@
+{
+  "eval_name": "healthy-repo-restraint",
+  "condition": "without_skill",
+  "expectations": [
+    {
+      "text": "Reports an always-on TOTAL in tokens AND as a percentage of the context window (not just a per-file byte size)",
+      "passed": false,
+      "evidence": "The only token figure is per-file and approximate - line 12: 'one file, CLAUDE.md, at **8 lines / 414 bytes (~110 tokens)**' - with no percentage of the context window anywhere in the report, and no always-on total (the skill listing is never counted, so no total exists). The inventory table at lines 21-24 prices context in bytes only."
+    },
+    {
+      "text": "Cited line numbers and counts are factually correct against the actual files",
+      "passed": true,
+      "evidence": "Every repo citation checks out against the files. '5 tracked files, 1 commit' (git ls-files = 5, git log = 1 commit). '8 lines / 414 bytes' (exact; ~110 tokens is a loose but flagged approximation of 414/4 = 103.5). 'CLAUDE.md | 414 | docs/overview.md | 114' (both exact byte counts). 'src/index.ts:1 RETRY_LIMIT = 3' (exact). 'No test files exist anywhere in repo' (true). 'nested conditionals, `any` types, an unexplained MAGIC = 86400000' (all present in src/legacy_adapter.ts). 'three of its four content lines carry rationale' (correct: line 3 commands, 5-6 retry, 7 exclusion, 8 migrations). 'Confirmed absent: .claude/, .cursor/, .github/, AGENTS.md, .cursorrules, *.mdc, settings.json' (all absent). Script names 'all three match exactly' (build/test/lint in package.json). No factual errors found."
+    },
+    {
+      "text": "Did not create, modify or delete any file in the target repo",
+      "passed": true,
+      "evidence": "externally verified"
+    },
+    {
+      "text": "Makes no recommendation about code implementation, naming, architecture or formatting",
+      "passed": true,
+      "evidence": "The ugly code is described but never acted on. Lines 50-53 use it only to justify keeping a context line: 'src/legacy_adapter.ts is genuinely ugly code (nested conditionals, `any` types, an unexplained MAGIC = 86400000). It is exactly the file an agent would volunteer to add tests for or refactor. The line pre-empts that wasted work by naming it deliberate and dated.' 'Recommended action' is '**None.**' No refactor, rename, test-coverage or formatting recommendation appears anywhere."
+    },
+    {
+      "text": "Findings are prioritized by severity, and P3-level items are kept to table rows rather than full prose sections",
+      "passed": false,
+      "evidence": "There is no severity scheme in the report - no P-levels, no severity tags, no ordering by harm. And the P3-level material is delivered entirely as prose sections rather than table rows: '## The one arguably-trimmable line - and why I would keep it' is a full ## section with three paragraphs for a single ~20-token line, and '## Two things to watch (not cuts)' is a full ## section with two multi-line numbered prose entries for the Q4 staleness and the unanchored migrations claim. The report's two tables are an inventory and a claim-verification matrix, not a findings tier."
+    },
+    {
+      "text": "Opens with a direct one-sentence answer to the question the user actually asked",
+      "passed": true,
+      "evidence": "The header block ends (line 5) with '**Verdict: No bloat. Cut nothing.**' and the Headline opens 'I went looking for bloat and did not find any.' - a direct answer to the question asked, before any evidence."
+    },
+    {
+      "text": "Concludes the context is broadly healthy rather than manufacturing high-severity findings",
+      "passed": true,
+      "evidence": "Sustained restraint. Line 5 'Verdict: No bloat. Cut nothing.'; line 16 'This is a well-maintained context file. The honest recommendation is to leave it alone.'; the claim-by-claim table returns Accurate / Accurate / Consistent / Unverifiable; line 71 heads the only concerns as 'Two things to watch (not cuts)' and line 82 says 'Do not cut it on my say-so'; line 86 'Recommended action: **None.**' Nothing is inflated into a high-severity finding."
+    },
+    {
+      "text": "Explicitly protects the retry-limit rationale (3 retries / provider rate-limits at 4 / January outage) as worth keeping",
+      "passed": true,
+      "evidence": "'## Why this file earns its tokens' names it first (lines 44-49): '**The retry cap.** An agent reading src/index.ts sees RETRY_LIMIT = 3 and learns nothing about *why*. `3` looks like an arbitrary default and a well-meaning agent would happily bump it to 5. The file supplies the two facts that make it load-bearing - the provider's ceiling of 4, and the January outage - plus an explicit \"do not raise without asking.\" This is the single highest-value line in the repo.' All three protected elements are named."
+    },
+    {
+      "text": "Separates the repo's own always-on cost from machine-wide skill-listing cost",
+      "passed": false,
+      "evidence": "No separation, because the machine-wide cost is never measured. The report's scope statement (lines 21-28) counts only CLAUDE.md and docs/overview.md and then says 'There is no second context surface and no rules sprawl.' The skill listing, the global ~/.claude/skills directory, and any machine-wide always-on cost are absent from the report entirely - so the 110-token headline silently understates what actually loads each session, which is exactly the conflation this assertion targets."
+    }
+  ],
+  "pass_rate": 0.6667
+}

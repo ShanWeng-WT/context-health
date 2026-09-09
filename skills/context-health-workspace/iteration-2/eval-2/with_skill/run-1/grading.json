@@ -1,0 +1,58 @@
+{
+  "eval_name": "healthy-repo-restraint",
+  "condition": "with_skill",
+  "expectations": [
+    {
+      "text": "Reports an always-on TOTAL in tokens AND as a percentage of the context window (not just a per-file byte size)",
+      "passed": true,
+      "evidence": "report.md:13 - '| **999** | **0.50%** | **ALWAYS-ON TOTAL** | |' in a table headed '% window', with the repo's own 104-token contribution broken out on the row above."
+    },
+    {
+      "text": "Cited line numbers and counts are factually correct against the actual files",
+      "passed": true,
+      "evidence": "I opened every cited file in the fixture. All exact: CLAUDE.md is 8 lines / 414 bytes (~104 tokens at 4 chars/token - correct); CLAUDE.md:3 is the build/test/lint line; :5-6 is the retry paragraph, quoted verbatim; :7 is 'src/legacy_adapter.ts is intentionally not covered by tests; it is deleted in Q4'; :8 is the forward-only migrations line. src/index.ts:1 is 'export const RETRY_LIMIT = 3'. src/legacy_adapter.ts is 144 bytes with 'MAGIC=86400000' and `any` throughout. docs/overview.md is 114 chars. 'agent-facing prose is 528 bytes total' = 414 + 114, exact. 'find returns 5 files' - exactly 5 non-.git files. package.json declares 'tsc -p .' with no tsconfig.json present, 'vitest run' with no test files, 'eslint .' - all three verified. The only wobble is a machine-level number outside the audited repo: '24 personal skills' where ~/.claude/skills currently holds 25 entries. Every repo citation is correct."
+    },
+    {
+      "text": "Did not create, modify or delete any file in the target repo",
+      "passed": true,
+      "evidence": "externally verified"
+    },
+    {
+      "text": "Makes no recommendation about code implementation, naming, architecture or formatting",
+      "passed": true,
+      "evidence": "The deliberately ugly code is handled exactly right: '## Out of scope' (lines 53-59) holds it - 'src/legacy_adapter.ts is dense and untyped (`any` throughout, an unexplained `MAGIC=86400000`). Deliberate per CLAUDE.md:7; not this audit's business.' - alongside the missing tsconfig.json and the empty test suite. Per the grading rubric, noting it under an explicit Out-of-scope heading does not fail this assertion. Nothing in Findings, Load-bearing, Missing or Re-check recommends touching code, naming, architecture or formatting. The three P3s are all about prose lines in CLAUDE.md."
+    },
+    {
+      "text": "Findings are prioritized by severity, and P3-level items are kept to table rows rather than full prose sections",
+      "passed": true,
+      "evidence": "Line 30 opens Findings with '**No P1s. No P2s.**' and explains the basis (sweep returned zero candidates; the always-on set was then read by hand). The three surviving items are P3-1..P3-3, delivered as three rows of a single table (lines 32-36) with Site / Harm x reach / Confidence / Recommend columns. No P3 gets a prose section."
+    },
+    {
+      "text": "Opens with a direct one-sentence answer to the question the user actually asked",
+      "passed": true,
+      "evidence": "Line 3, one sentence, answering the bloat question head-on: '**No, there is no bloat worth cutting here** - the repo's own always-on context is a single 8-line CLAUDE.md at ~104 tokens (0.05% of a 200K window), every command and path in it checks out, and the three notes below are accuracy nits worth ~38 tokens combined.'"
+    },
+    {
+      "text": "Concludes the context is broadly healthy rather than manufacturing high-severity findings",
+      "passed": true,
+      "evidence": "Restraint is explicit and repeated. Line 3 'No, there is no bloat worth cutting here'; line 17 'That is defensible by a wide margin'; line 30 'No P1s. No P2s. The detector sweep ... returned \"findings\": [] - zero candidates across all nine detectors'; line 38 'Total recoverable ... ~38 tokens. That is not a reason to act.' Line 36 even argues against its own P3-3: 'Leaving it is a defensible choice; I would not spend a change on it.' No finding is inflated above P3."
+    },
+    {
+      "text": "Explicitly protects the retry-limit rationale (3 retries / provider rate-limits at 4 / January outage) as worth keeping",
+      "passed": true,
+      "evidence": "First bullet of '## Load-bearing - leave this alone' (line 44): '**CLAUDE.md:5-6 - the retry cap and its rationale.**' It quotes the full sentence including the provider limit of 4 and the January outage, then justifies protection against the code: 'src/index.ts:1 carries `export const RETRY_LIMIT = 3` - the *number* is in the code, but the mechanism (provider limit of 4), the incident, and the change-control expectation exist nowhere else. This is the textbook keep: without it an agent \"simplifies\" the cap and reintroduces the outage.' Also re-flagged in Re-check item 3."
+    },
+    {
+      "text": "Separates the repo's own always-on cost from machine-wide skill-listing cost",
+      "passed": true,
+      "evidence": "Line 19: '**The repo contributes 104 of those 999 tokens.** The other 895 (90%) is the listing of your 24 personal skills in C:\\Users\\shan.weng\\.claude\\skills\\, which loads on *every* repo you open, not just this one. If you ever want to reduce always-on cost, that is the only lever with real weight - and it belongs to a separate audit of your global skills, not to this repo.' Line 20 repeats the split for the on-demand tier ('all 33 are under ~/.claude/skills'), and Re-check item 4 books it as separate work."
+    }
+  ],
+  "pass_rate": 1.0,
+  "summary": {
+    "passed": 9,
+    "failed": 0,
+    "total": 9,
+    "pass_rate": 1.0
+  }
+}

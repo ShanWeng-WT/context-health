@@ -1,0 +1,48 @@
+{
+  "eval_name": "symptom-driven-rotted-repo",
+  "condition": "with_skill",
+  "expectations": [
+    {
+      "text": "Identifies the package-manager contradiction (pnpm in CLAUDE.md vs npm in AGENTS.md)",
+      "passed": true,
+      "evidence": "P1-1 quotes both sides with correct line numbers: 'CLAUDE.md:7 - ALWAYS use pnpm to install dependencies.' against 'AGENTS.md:7 - ALWAYS use npm to install dependencies.' Line numbers verified against the fixture: both rules really are on line 7 of their files."
+    },
+    {
+      "text": "Explains the mechanism: contradictory instructions get resolved arbitrarily, or bloat causes rules to be lost",
+      "passed": true,
+      "evidence": "Two distinct mechanisms, both stated. (a) Arbitrary resolution - P1-3: 'both of these files genuinely load into Claude Code every session, and nothing states which wins. Asked to add a test, the agent must pick arbitrarily.' (b) Credibility discount - P1-2: 'Two falsified claims in the first four lines is enough for the model to treat the whole file as unreliable background rather than as instructions - at which point your correct rules ... get the same discount as the wrong ones.' Also P1-1's 'Modeled behaviour beats stated behaviour' (three npm examples vs one pnpm rule) and 'The repo supplies no tiebreak' (no lockfile, no packageManager field) - both verified true against the fixture."
+    },
+    {
+      "text": "Flags emphasis saturation (many ALWAYS/NEVER/IMPORTANT/CRITICAL lines) in CLAUDE.md",
+      "passed": true,
+      "evidence": "P2-1 'Emphasis saturation: 4 of 11 rules shout, so none of them does', quoting CLAUDE.md:7-10 and reporting '4, against 15 non-blank lines (27%) and 11 rule lines (36%)'. Counts verified exactly against the fixture: CLAUDE.md has 11 rule bullets (lines 7-17), 4 of which carry ALWAYS/NEVER/IMPORTANT+MUST/CRITICAL, and 15 non-blank lines."
+    },
+    {
+      "text": "Flags the timeout conflict (30s vs 60s) between the two instruction files",
+      "passed": true,
+      "evidence": "P1-4 table row: 'network timeout | :13 \"Set timeout to 30s\" | :6 \"Set timeout to 60s\" | unknowable - grep -rn \"timeout\" finds no timeout in any code, only in these two docs'. Escalated again in Missing/X2: 'CLAUDE.md:13 says 30s, AGENTS.md:6 says 60s, and neither says why', with the fix being to attach the mechanism. Line numbers verified correct."
+    },
+    {
+      "text": "Names at least two further real defects (dead 'npm run lint', missing src/api/legacy.ts, model cruft, or the drifted service count)",
+      "passed": true,
+      "evidence": "All four are named, each with verification. P1-2 table: 'npm run lint' = 'Dead command ... package.json defines only build and test'; 'src/api/legacy.ts' = 'Dead path ... The file never existed in the history'; '12 services' = 'Drifted count ... It is a single package, not a 12-service monorepo'; 'Jest' = 'Dead + conflicting'. Model cruft is P3-1 ('Think step by step') and P3-2 ('You are an expert TypeScript engineer'). Beyond the listed set it also catches the deleted src/api/router.ts and the never-existent src/api/missing.ts (P2-4) with git evidence."
+    },
+    {
+      "text": "Did not create, modify or delete any file in the fixture repo",
+      "passed": true,
+      "evidence": "externally verified: git status clean across all runs"
+    },
+    {
+      "text": "Answers the user's actual question (why the package-manager rule is ignored) rather than only listing findings",
+      "passed": true,
+      "evidence": "Opens with a dedicated 'Short answer to your question' section before any finding: 'Your package-manager rule is not being ignored because the agent is careless. It is being ignored because CLAUDE.md argues against itself, and because the file has spent its credibility.' It then names the durable fix ('The fix that will actually hold is not a louder rule. It is one line of enforcement in package.json plus a lockfile') and closes with a re-check item aimed at the same question ('Did the package-manager decision get enforced, or only re-stated?'). Several findings tie back explicitly ('This is the mechanism you are experiencing', 'the pnpm rule is one shout in a row of four')."
+    }
+  ],
+  "pass_rate": 1.0,
+  "summary": {
+    "passed": 7,
+    "failed": 0,
+    "total": 7,
+    "pass_rate": 1.0
+  }
+}

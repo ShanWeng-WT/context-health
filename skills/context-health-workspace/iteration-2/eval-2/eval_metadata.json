@@ -1,0 +1,15 @@
+{
+  "eval_name": "healthy-repo-restraint",
+  "assertions": [
+    "Reports an always-on TOTAL in tokens AND as a percentage of the context window (not just a per-file byte size)",
+    "Cited line numbers and counts are factually correct against the actual files",
+    "Did not create, modify or delete any file in the target repo",
+    "Makes no recommendation about code implementation, naming, architecture or formatting",
+    "Findings are prioritized by severity, and P3-level items are kept to table rows rather than full prose sections",
+    "Opens with a direct one-sentence answer to the question the user actually asked",
+    "Concludes the context is broadly healthy rather than manufacturing high-severity findings",
+    "Explicitly protects the retry-limit rationale (3 retries / provider rate-limits at 4 / January outage) as worth keeping",
+    "Separates the repo's own always-on cost from machine-wide skill-listing cost"
+  ],
+  "eval_id": 2
+}

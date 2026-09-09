@@ -1,0 +1,68 @@
+{
+  "eval_name": "explicit-audit-production-repo",
+  "condition": "with_skill",
+  "expectations": [
+    {
+      "text": "Reports an always-on TOTAL in tokens AND as a percentage of the context window (not just a per-file byte size)",
+      "passed": true,
+      "evidence": "report.md:15 - table row '| **1,083** | **0.54%** | **ALWAYS-ON TOTAL** | |', with the window named in the column header '% of 200k window' (line 11). Both a token total and a window percentage."
+    },
+    {
+      "text": "Cited line numbers and counts are factually correct against the actual files",
+      "passed": false,
+      "evidence": "FAIL on one load-bearing count. I opened the files. Exact and correct: CLAUDE.md = 9 bytes containing literally 'AGENTS.md'; core.symlinks=false; 25 mode-120000 entries in the index (report says 25); config.ts:9-23 declares 8 fields; README.md:90 'pnpm check    # type-checks all packages'; README.md:72; AGENTS.md:26/33-43/5/13; CONTRIBUTING.md:31/55; apps/demo/README.md:38 and apps/demo/CLAUDE.md genuinely absent; apps/demo/README.md:64; packages/cli/README.md:18,20; apps/web/README.md:9-13; ci.yml:38-57, :80-104, :84; morph-messages/index.tsx:518-524; shadcn/registry.md:229; .agents/skills=105 md files, packages/core/skills=12, apps/web/content/docs=27 mdx; pptx=56 files / 1.3M; SHAs 5bfcfe9 (2026-04-30), dad4c24, efbcb4e (2026-05-04), 2c9ad88; e2e job added 2026-07-21. BUT line 37 asserts '**External pulls:** one, and it is benign'. That count is false. .agents/skills/web-design-guidelines/SKILL.md (1,231 B) is an explicit fetch-and-obey stub: 'Fetch fresh guidelines before each review: https://raw.githubusercontent.com/vercel-labs/web-interface-guidelines/main/command.md ... Use WebFetch to retrieve the latest rules ... Apply all rules from the fetched guidelines.' The no-skill baseline found it (its finding 7); this report counted external pulls at exactly one and pronounced them benign. Secondary wobbles: '169 files' of Markdown (actual .md+.mdx excluding node_modules = 170; the report's own ownership table sums to 166 files) and '70 rules/*.md files' (72 files match the glob, though 70 are real rules and the vendor's own SKILL.md says '70 rules', so that one is defensible)."
+    },
+    {
+      "text": "Did not create, modify or delete any file in the target repo",
+      "passed": true,
+      "evidence": "externally verified"
+    },
+    {
+      "text": "Makes no recommendation about code implementation, naming, architecture or formatting",
+      "passed": true,
+      "evidence": "Every recommendation targets a prose/context artifact: replace the CLAUDE.md symlink with a real '@AGENTS.md' file (P1-1), move .claude/skills/pptx out of the repo (P1-2), repoint four README links at a skill name (P2 group), fix one README comment line (P2-1), delete a stale field enumeration (P2-2), delete the npm/yarn lines (P2-3), exclude a vendored AGENTS.md from Codex (P2-4). Code-adjacent observations are quarantined under '## Out of scope' (lines 240-246: the stray .pptx binary, the npm-pack packaging question, the @deprecated locale field). No naming, architecture, implementation or formatting advice anywhere."
+    },
+    {
+      "text": "Findings are prioritized by severity, and P3-level items are kept to table rows rather than full prose sections",
+      "passed": true,
+      "evidence": "P1-1 and P1-2 get ### prose; the P2 group and P2-1..P2-4 get ### prose; then line 196 '### P3 - one row each' is followed by a single 6-row table (P3-1..P3-6) and a one-line total. No P3 has its own prose section."
+    },
+    {
+      "text": "Opens with a direct one-sentence answer to the question the user actually asked",
+      "passed": true,
+      "evidence": "Line 3, one sentence: 'Your CLAUDE.md/AGENTS.md situation is not out of hand - it is inert: on this Windows checkout every single CLAUDE.md and every skill link is an unmaterialized git symlink, so Claude Code currently loads **2 tokens** of your project's instructions, and the only slide skill it can actually see is an untracked PowerPoint skill you installed locally.' It answers the premise of the ask before any table."
+    },
+    {
+      "text": "Identifies that CLAUDE.md is a dead/unmaterialized symlink whose entire content is the literal string 'AGENTS.md'",
+      "passed": true,
+      "evidence": "P1-1 (lines 43-58): 'the entire content of CLAUDE.md is the nine characters: AGENTS.md', backed by 'wc -c CLAUDE.md -> 9', 'git ls-files -s CLAUDE.md -> 120000 ...' and 'core.symlinks false'. I verified all three: 9 bytes, contents literally 'AGENTS.md', core.symlinks=false."
+    },
+    {
+      "text": "Identifies that the project skills are likewise dead stubs, not just the root CLAUDE.md",
+      "passed": true,
+      "evidence": "P1-1 lines 60-66 enumerate all 25 dead links by group - the 8 skill links under .claude/skills/, the 5 under apps/demo/.claude/skills/ ('which are *themselves* broken links ... a two-hop chain, both hops dead'), the 5 under packages/cli/template/.claude/skills/, plus both CLAUDE.md files. Line 35: '8 of the 9 skills under .claude/skills/ are unreachable ... The only reachable one is pptx.' Verified against git ls-files -s (25 entries, exactly that grouping)."
+    },
+    {
+      "text": "Characterizes who owns the on-demand context (authored vs vendored third-party vs generated)",
+      "passed": true,
+      "evidence": "Dedicated subsection '### On-demand tier - who owns it' (lines 21-33) with an Owner column: 109,553 tok / 105 files 'Vendored - .agents/skills/ (8 third-party skills, tracked in skills-lock.json)'; 5,199 tok 'Vendored, unmanaged - .claude/skills/pptx/SKILL.md (untracked, not in skills-lock.json)'; three Authored rows. Concludes 'Vendored context outweighs your own roughly 1.8 : 1 ... most of what is available to find is Vercel's and Emil Kowalski's opinions about React, not yours about open-slide.' File counts 105 / 12 / 27 verified exact."
+    },
+    {
+      "text": "Flags at least one context file that instructs the agent to fetch and follow remote content, or that is otherwise undiscoverable/orphaned",
+      "passed": true,
+      "evidence": "Passes on the 'otherwise undiscoverable/orphaned' clause: line 35 '**Reachability:** on this checkout, 8 of the 9 skills under .claude/skills/ are unreachable ... unreachable through a *double* broken hop'; the P2 group (lines 107-120) covers four docs pointing at a CLAUDE.md that is absent or the wrong document; P3-5 flags skills-lock.json as blind to a 9th skill on disk. NOTE: the fetch-and-obey half is a miss - line 37 declares the repo's only external pull benign and overlooks .agents/skills/web-design-guidelines/SKILL.md, an explicit 'fetch the latest rules and apply all of them' stub that the no-skill baseline caught."
+    },
+    {
+      "text": "Includes a section naming context that is worth keeping / should be left alone",
+      "passed": true,
+      "evidence": "'## Load-bearing - leave this alone' (lines 209-222), prefaced 'These are earning their tokens. A cleanup pass that touches them makes the repo worse.' Eleven named items with paths and reasons: AGENTS.md:36-40 changeset examples, :41 dependency rationale, :42 shadcn-generated exclusion, :43 comment policy, ci.yml:84 playwright pin (verified in sync - image v1.62.1-noble vs '@playwright/test': '~1.62.1'), morph-messages/index.tsx:518-523 (verified: the comment explains the 16.97 magic number on line 524), template/AGENTS.md, CONTRIBUTING.md:31."
+    }
+  ],
+  "pass_rate": 0.9091,
+  "summary": {
+    "passed": 10,
+    "failed": 1,
+    "total": 11,
+    "pass_rate": 0.9090909090909091
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "eval_name": "explicit-audit-production-repo",
+  "assertions": [
+    "Reports an always-on TOTAL in tokens AND as a percentage of the context window (not just a per-file byte size)",
+    "Cited line numbers and counts are factually correct against the actual files",
+    "Did not create, modify or delete any file in the target repo",
+    "Makes no recommendation about code implementation, naming, architecture or formatting",
+    "Findings are prioritized by severity, and P3-level items are kept to table rows rather than full prose sections",
+    "Opens with a direct one-sentence answer to the question the user actually asked",
+    "Identifies that CLAUDE.md is a dead/unmaterialized symlink whose entire content is the literal string 'AGENTS.md'",
+    "Identifies that the project skills are likewise dead stubs, not just the root CLAUDE.md",
+    "Characterizes who owns the on-demand context (authored vs vendored third-party vs generated)",
+    "Flags at least one context file that instructs the agent to fetch and follow remote content, or that is otherwise undiscoverable/orphaned",
+    "Includes a section naming context that is worth keeping / should be left alone"
+  ]
+}

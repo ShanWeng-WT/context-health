@@ -1,0 +1,47 @@
+{
+  "eval_name": "explicit-audit-production-repo",
+  "condition": "with_skill",
+  "expectations": [
+    {
+      "text": "Reports a concrete always-on token figure for the repo (a number, not a vague claim)",
+      "passed": true,
+      "evidence": "Lines 11-17: an 'Always-on cost' table giving 1,081 tokens / 0.54% for the skill listing, 2 tokens for CLAUDE.md, and a bolded ALWAYS-ON TOTAL of 1,083 tokens / 0.54%. It further splits out what is repo-owned ('only ~186 tokens are repo-owned') and prices the healthy counterfactual (~1,400 always-on tokens). On-demand is separately quantified at ~90,489 tokens across 38 files."
+    },
+    {
+      "text": "Identifies that CLAUDE.md is a dead/unmaterialized symlink whose entire content is the literal string 'AGENTS.md'",
+      "passed": true,
+      "evidence": "P1-1 (lines 30-51): 'Quoted - the entire content of CLAUDE.md, all 9 bytes of it:' followed by a fenced block containing exactly AGENTS.md, backed by 'git config core.symlinks -> false' and 'git ls-files -s CLAUDE.md -> 120000 ...'. Verified correct against ground truth (9-byte file, core.symlinks=false)."
+    },
+    {
+      "text": "Flags that the AGENTS.md file(s) are not actually read by Claude Code because nothing bridges them",
+      "passed": true,
+      "evidence": "P1-1: 'Every session on this machine starts with CLAUDE.md contributing the literal string AGENTS.md and nothing else. The agent never sees ... It does not fail loudly - it just quietly behaves like a repo with no instructions.' The fix names the missing bridge: 'Replace the CLAUDE.md symlink with a real one-line file containing @AGENTS.md. Claude Code's @import resolves at launch on every platform.'"
+    },
+    {
+      "text": "Every reported finding cites a specific file path",
+      "passed": true,
+      "evidence": "Every finding header carries a path: P1-1 'CLAUDE.md:1'; P1-2 '.claude/skills/pptx/SKILL.md:3'; P2-1 'AGENTS.md:33-43 vs CONTRIBUTING.md:67-104'; P2-2 'README.md:90'; P2-3 'AGENTS.md:23, CONTRIBUTING.md:52, README.md:88'. The P3 table has a dedicated Location column populated for all 8 rows (e.g. 'apps/demo/README.md:38', 'packages/cli/template/README.md:38', 'apps/web/README.md:1-45')."
+    },
+    {
+      "text": "Did not create, modify or delete any tracked file in D:/Projects/open-slide",
+      "passed": true,
+      "evidence": "externally verified: git status clean across all runs"
+    },
+    {
+      "text": "Includes a section naming context that is worth keeping / should be left alone",
+      "passed": true,
+      "evidence": "Dedicated section 'Load-bearing - leave this alone' (line 228), prefaced 'Named explicitly so a cleanup pass does not take them out with the noise.' Ten named items with paths and reasons, e.g. 'AGENTS.md:42 ... Verified against biome.json:13'; 'AGENTS.md:43 - the comments rule. Long, and it should stay long.'; 'current-slide/SKILL.md:11-19 ... Hard-won behavioural knowledge'."
+    },
+    {
+      "text": "Makes no recommendation about code implementation, naming, architecture or formatting",
+      "passed": true,
+      "evidence": "Every Recommend block targets context files or their delivery mechanism: rewrite README.md:90-91 prose, have CONTRIBUTING.md link to AGENTS.md instead of restating it, cut apps/demo/README.md to ~8 lines, remove the vendored pptx skill. Code-level observations are explicitly quarantined: the 'Out of scope' section defers the stale '@open-slide/core': '^0.0.6' pin as 'Different review, not this one.' BORDERLINE noted for the record: P1-1 option 2 suggests 'add a postinstall that runs the same linkOrCopy logic init.ts already ships' - a build-script change - but its subject is materializing context files on Windows, not code quality, naming, architecture or formatting, and it is offered second to a pure git-config fix."
+    },
+    {
+      "text": "Findings are prioritized by severity rather than listed flat",
+      "passed": true,
+      "evidence": "Explicit tiering P1-1, P1-2, P2-1, P2-2, P2-3, then a '### P3 - lower severity' table with a 'Why it is P3' column justifying each demotion. Each finding additionally carries a harm-class x reach tag ('Misleading x always-on', 'Conflicting x always-on') and a confidence rating (high / medium)."
+    }
+  ],
+  "pass_rate": 1.0
+}

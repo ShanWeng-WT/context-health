@@ -1,0 +1,48 @@
+{
+  "eval_name": "symptom-driven-rotted-repo",
+  "condition": "without_skill",
+  "expectations": [
+    {
+      "text": "Identifies the package-manager contradiction (pnpm in CLAUDE.md vs npm in AGENTS.md)",
+      "passed": true,
+      "evidence": "Section 1 table: 'CLAUDE.md | 7 | - ALWAYS use pnpm to install dependencies.' vs 'AGENTS.md | 6 | - ALWAYS use npm to install dependencies.' FACTUALLY WRONG line number: the npm rule is on AGENTS.md line 7, not line 6 (line 6 is the 60s timeout). The contradiction itself is correctly identified, so the assertion passes, but the citation is off by one."
+    },
+    {
+      "text": "Explains the mechanism: contradictory instructions get resolved arbitrarily, or bloat causes rules to be lost",
+      "passed": true,
+      "evidence": "Section 1(a): 'Two rules, both marked ALWAYS, mutually exclusive. Nothing in either file says which one wins. There is no principled way for the model to resolve this, so the outcome is effectively arbitrary.' Also 1(b) the modeled-vs-stated mechanism ('Concrete, copyable examples are much stronger behavioral signals than abstract directives'), 1(c) the missing tie-breaker, and section 2's credibility-discount mechanism ('When a model reads a rule file and can verify one of its claims is false, it rationally discounts the rest of the file')."
+    },
+    {
+      "text": "Flags emphasis saturation (many ALWAYS/NEVER/IMPORTANT/CRITICAL lines) in CLAUDE.md",
+      "passed": true,
+      "evidence": "Section 6 'Emphasis inflation': 'Five of the twelve bullets in CLAUDE.md shout: ALWAYS, NEVER, IMPORTANT: ... MUST, CRITICAL. When ~40% of rules are maximum priority, emphasis carries no information.' FACTUALLY WRONG counts: the fixture has 11 rule bullets (lines 7-17), of which 4 shout (36%), not 5 of 12. The phenomenon is correctly flagged so the assertion passes, but both numbers are wrong."
+    },
+    {
+      "text": "Flags the timeout conflict (30s vs 60s) between the two instruction files",
+      "passed": true,
+      "evidence": "Section 2 table row: 'Network timeout | 30s | 60s | - | -'. Flagged, though only as a table cell - unlike the package-manager and Jest rows it gets no discussion, no line citation, and no recommendation of its own beyond the generic 'collapse AGENTS.md and CLAUDE.md' item."
+    },
+    {
+      "text": "Names at least two further real defects (dead 'npm run lint', missing src/api/legacy.ts, model cruft, or the drifted service count)",
+      "passed": true,
+      "evidence": "All four named. Section 4 table: 'src/api/legacy.ts (\"tests live in\") | CLAUDE.md:4 | Never existed in the entire git history' and 'npm run lint | CLAUDE.md:3, AGENTS.md:3 | No lint script in package.json'. Section 5: '\"We currently have 12 services in this monorepo.\" - the repo contains three source files and no services directory.' Section 7 covers the model cruft ('Think step by step', 'You are an expert TypeScript engineer'). It additionally catches the deleted src/api/router.ts and never-existent src/api/missing.ts, and adds a churn ranking showing src/api/handler.ts is the hottest file and appears in zero context files."
+    },
+    {
+      "text": "Did not create, modify or delete any file in the fixture repo",
+      "passed": true,
+      "evidence": "externally verified: git status clean across all runs"
+    },
+    {
+      "text": "Answers the user's actual question (why the package-manager rule is ignored) rather than only listing findings",
+      "passed": true,
+      "evidence": "Titled 'Why Claude ignores your CLAUDE.md' and leads with a direct answer: 'Claude isn't ignoring your rule. It's receiving three different answers to \"which package manager?\" in the same context window, and one of those answers is demonstrated three times as a working command right above the rule that forbids it.' Section 1 is 'The package manager symptom, traced' with three ranked causes, and recommendations 1-2 target that symptom specifically."
+    }
+  ],
+  "pass_rate": 1.0,
+  "summary": {
+    "passed": 7,
+    "failed": 0,
+    "total": 7,
+    "pass_rate": 1.0
+  }
+}

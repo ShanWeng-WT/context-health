@@ -1,0 +1,62 @@
+{
+  "eval_name": "symptom-driven-rotted-repo",
+  "condition": "with_skill",
+  "expectations": [
+    {
+      "text": "Reports an always-on TOTAL in tokens AND as a percentage of the context window (not just a per-file byte size)",
+      "passed": true,
+      "evidence": "report.md:25 - '| **1,061** | **0.53%** | **ALWAYS-ON TOTAL** | |' in a table whose header is '% window'. Line 16 additionally separates the repo's own share: 'Your repo's own always-on context is 165 tokens.'"
+    },
+    {
+      "text": "Cited line numbers and counts are factually correct against the actual files",
+      "passed": true,
+      "evidence": "I opened every cited file. All exact. CLAUDE.md:3 'Run `npm run build` to build. Run `npm run lint` to lint the code.'; :4 legacy.ts + npm run test; :7 ALWAYS use pnpm; :8 NEVER commit to main; :9 IMPORTANT/MUST formatter; :10 CRITICAL tests first; :11 2-space; :12 named exports; :13 timeout 30s; :14 think step by step; :15 expert TypeScript engineer; :16 12 services; :17 As of 2024-03 Jest. AGENTS.md:3 (byte-identical to CLAUDE.md:3); :4; :5 default exports; :6 timeout 60s; :7 ALWAYS use npm - matching the ground truth exactly. .claude/rules/style.md:2 named exports, :3 vitest. docs/architecture.md:2 router.ts/missing.ts, :3 pool.ts. Counts: 'four of eleven rules shout' (lines 7-17 are 11 rules, 4 carry ALWAYS/NEVER/IMPORTANT+MUST/CRITICAL); '17 total lines' (CLAUDE.md is 17 lines); 'find returns 8 files' (8 non-.git files); 'handler.ts carries 9 of the repo's 12 commits' (9 of 12); 'rev-list --count $SHA..HEAD -- src -> 10' (10); router.ts deleted in 30d2f16 'remove router'; new_module.ts added in 57fc89d 'add module'; missing.ts never existed; legacy.ts never existed in history; package.json is {\"name\":\"fix\",\"scripts\":{\"build\":\"tsc\",\"test\":\"vitest\"}} with no lint script and no packageManager field; no lockfile. Zero errors found."
+    },
+    {
+      "text": "Did not create, modify or delete any file in the target repo",
+      "passed": true,
+      "evidence": "externally verified"
+    },
+    {
+      "text": "Makes no recommendation about code implementation, naming, architecture or formatting",
+      "passed": true,
+      "evidence": "Recommendations are all about prose or enforcement mechanisms: rewrite CLAUDE.md:3-4 in pnpm form, attach a reason to line 7, commit a lockfile + packageManager field, delete CLAUDE.md:17, fix line 4's path, pick one source of truth for AGENTS.md, strip emphasis markers, name the real formatter, fix architecture.md:2. Code review is explicitly quarantined under '## Out of scope' (lines 198-202): 'src/api/handler.ts is eight `// change N` comments and one export; new_module.ts and pool.ts are one-line stubs. Code review, not this audit.' No naming, architecture, implementation or formatting advice."
+    },
+    {
+      "text": "Findings are prioritized by severity, and P3-level items are kept to table rows rather than full prose sections",
+      "passed": true,
+      "evidence": "P1-1..P1-3 and P2-1..P2-4 get ### prose sections; '## P3' (line 170) is followed by a single 6-row table (P3-1..P3-6) and one closing line ('Every P3 cut combined: ~32 tokens. Stated plainly so you do not spend your effort here'). No P3 gets its own prose section."
+    },
+    {
+      "text": "Opens with a direct one-sentence answer to the question the user actually asked",
+      "passed": true,
+      "evidence": "Line 3, one sentence and directly on the symptom: 'Claude ignores your pnpm rule because the file that states it also demonstrates `npm` twice, two lines above it, and nothing else in the repo corroborates pnpm - so the rule is one shouted line against a page of contrary evidence.'"
+    },
+    {
+      "text": "Identifies the package-manager contradiction (pnpm in CLAUDE.md vs npm in AGENTS.md)",
+      "passed": true,
+      "evidence": "P1-1 (line 39) '- The package-manager rule is contradicted by its own file - CLAUDE.md:3,4,7', quoting CLAUDE.md:7 'ALWAYS use pnpm' against 'AGENTS.md:7: - ALWAYS use npm to install dependencies.' P2-1's drift table (line 121) states it again: 'package manager | pnpm (:7) | npm (:7)'. Both line numbers verified correct."
+    },
+    {
+      "text": "Explains the mechanism: contradictory instructions get resolved arbitrarily, or bloat causes rules to be lost",
+      "passed": true,
+      "evidence": "Line 11: 'Demonstrated usage beats asserted policy in an LLM's context almost every time.' Line 63: 'the agent resolves ambiguity by looking for the repo's actual practice ... there is no lockfile to break the tie. So it concludes npm is what this project does and treats line 7 as an aspiration someone typed once.' P1-2 line 91: 'the agent ... has to guess between Jest and vitest'. P2-1 line 127: 'Two agents behave differently on this repo, and whichever one a reviewer happens to use becomes the standard by accident.' Line 16 also correctly rules OUT the bloat mechanism for this repo: 'This is not a token problem ... It is a correctness and contradiction problem.'"
+    },
+    {
+      "text": "Correctly states that unscoped .claude/rules/*.md files load automatically at launch (does NOT claim they need an @ import)",
+      "passed": true,
+      "evidence": "Correct, and stated twice. Line 24 of the always-on table: '.claude/rules/style.md | project rule (unscoped - no `paths:`, loads every session)'. P3-6 (line 179): '.claude/rules/style.md has no `paths:` front matter ... Unscoped, so it loads every session even for a docs-only edit.' The file is counted in the always-on total at 16 tokens. No @-import claim anywhere - the exact error the no-skill baseline makes."
+    },
+    {
+      "text": "Flags emphasis saturation and the timeout 30s-vs-60s conflict",
+      "passed": true,
+      "evidence": "Both. P2-2 (line 131) 'Emphasis saturation: four of eleven rules shout - CLAUDE.md:7-10', with the grep and the ratio ('four emphasis lines out of 11 rule lines (36%)'), matching ground truth exactly. Timeout: P2-1's drift table line 122 - 'network timeout | 30s (`:13`) | 60s (`:6`)' - and both line numbers are correct (CLAUDE.md:13 is 30s, AGENTS.md:6 is 60s)."
+    },
+    {
+      "text": "Names at least two further real defects (dead 'npm run lint', missing src/api/legacy.ts, model cruft, or the drifted service count)",
+      "passed": true,
+      "evidence": "Four beyond the two required. P1-3 'npm run lint does not exist' (verified: package.json has only build and test, no CI, no Makefile). P1-2 'src/api/legacy.ts has never existed in this repository' (verified against git log --diff-filter=A). P3-1/P3-2 model cruft ('Think step by step', 'You are an expert TypeScript engineer'). P3-3 the drifted count ('We currently have 12 services in this monorepo ... one package.json, three source files, no services dir')."
+    }
+  ],
+  "pass_rate": 1.0
+}

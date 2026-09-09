@@ -1,0 +1,62 @@
+{
+  "eval_name": "explicit-audit-production-repo",
+  "condition": "without_skill",
+  "expectations": [
+    {
+      "text": "Reports an always-on TOTAL in tokens AND as a percentage of the context window (not just a per-file byte size)",
+      "passed": false,
+      "evidence": "No token figure and no window percentage anywhere in the report. Context is priced only in bytes and words: 'AGENTS.md | 3,149 B / 466 w' (line 26), '54,681 words / 730 KB in .agents/skills/' (line 14), '1.3 MB' (line 46), '108,261 B / 13,174 w' (line 35). There is no always-on total of any kind."
+    },
+    {
+      "text": "Cited line numbers and counts are factually correct against the actual files",
+      "passed": false,
+      "evidence": "Line 56: 'git ls-files -s reports **26** entries with mode 120000'. I ran it: the actual count is 25 (8 under .claude/skills, 5 under apps/demo/.agents/skills, 5 under apps/demo/.claude/skills, 5 under packages/cli/template/.claude/skills, CLAUDE.md, packages/cli/template/CLAUDE.md). Line 12 also says 'all **13** .claude/skills/* entries are committed git symlinks' - the root .claude/skills/ holds 9 entries (8 committed symlinks plus the untracked pptx directory); no reading of that glob yields 13. Everything else I spot-checked is exact: .claude/skills/apple-design is a 33-byte file containing '../../.agents/skills/apple-design'; init.ts:47-55 is linkOrCopy and :58-61 is the CLAUDE.md guard; .gitignore:8 = packages/cli/template/.agents/skills; overview.mdx:52-53; current-plugin.ts:69-70 writes node_modules/.open-slide/current.json; skills-lock.json = 1,786 B with zero grep hits repo-wide; template pins ^0.0.6 against core 1.18.0; React 18.3.1 vs 19.2.7 and Next 16.2.12; CI runs format:check and lint as separate steps and never check; the Wanin .pptx is 6,247,889 B; SKILL.md says '70 rules' while its own AGENTS.md says '40+ rules'; 730 KB vs 104 KB; README.md:13 'Compiled output (generated)'; HEAD is genuinely 7384649 on main. But 26-vs-25 is the headline count of the report's number-one finding."
+    },
+    {
+      "text": "Did not create, modify or delete any file in the target repo",
+      "passed": true,
+      "evidence": "externally verified"
+    },
+    {
+      "text": "Makes no recommendation about code implementation, naming, architecture or formatting",
+      "passed": false,
+      "evidence": "Finding 6 (lines 115-128) is titled '...and its Windows fallback is dead code'. It quotes packages/cli/src/init.ts:58-61, traces control flow ('So existsSync(claudeMd) is always true and the branch never executes'), and its recommendation aims at making that code path live, closing with 'Worth a scaffold-on-Windows test either way' - a test-implementation recommendation. Line 213 additionally renders an architecture verdict: 'Having one canonical skill source (packages/core/skills/) mirrored into the template by a build script, rather than hand-copied, is the right architecture.' The with_skill report quarantines the equivalent packaging question under an explicit 'Out of scope' heading instead."
+    },
+    {
+      "text": "Findings are prioritized by severity, and P3-level items are kept to table rows rather than full prose sections",
+      "passed": false,
+      "evidence": "Severity ordering is present ('Findings, worst first', each header tagged '(severity: high/medium/low)'), but the low-severity tier is not compressed. Finding 10 'Broken and mis-aimed cross-references (severity: low)', finding 11 'apps/demo and apps/web have no scoped context (severity: low)' and finding 12 'Template pins a stale core version (severity: low)' each get a full ### prose section with bullets and a Recommendation paragraph. There is no P3-equivalent findings table anywhere; the one table at the end is a 10-row work-ordering plan, not a compressed findings tier."
+    },
+    {
+      "text": "Opens with a direct one-sentence answer to the question the user actually asked",
+      "passed": true,
+      "evidence": "The TL;DR opens (line 10) with a direct one-sentence answer to the premise: 'Your instinct is right, but the problem is not the one you are expecting.' - stated before any of the enumerated findings."
+    },
+    {
+      "text": "Identifies that CLAUDE.md is a dead/unmaterialized symlink whose entire content is the literal string 'AGENTS.md'",
+      "passed": true,
+      "evidence": "Line 12: 'Claude Code launched at the repo root reads a 9-byte CLAUDE.md whose entire content is the literal string AGENTS.md'; line 60 repeats it with the mechanism: 'CLAUDE.md contains exactly AGENTS.md -- 9 bytes, no @ prefix, so Claude Code does not treat it as an import.' Verified: 9 bytes, contents literally 'AGENTS.md'."
+    },
+    {
+      "text": "Identifies that the project skills are likewise dead stubs, not just the root CLAUDE.md",
+      "passed": true,
+      "evidence": "Line 61: '.claude/skills/apple-design is a 33-byte *file* containing ../../.agents/skills/apple-design, not a directory. Same for the other seven. No valid skill is discovered at the repo root.' Verified: that path is a 33-byte text file with exactly that content. Finding 6 additionally covers the dangling packages/cli/template/.claude/skills/* links."
+    },
+    {
+      "text": "Characterizes who owns the on-demand context (authored vs vendored third-party vs generated)",
+      "passed": true,
+      "evidence": "All three ownership axes are named. The skills table (lines 42-48) carries an explicit Ownership column: packages/core/skills 'Yours. Canonical, shipped in the npm tarball'; .agents/skills 'Vendored third-party (Vercel, shadcn, Emil Kowalski, Anthropic)'. Line 38 adds the generated tier: 'Both are **generated build artifacts** of their own rules/ directories - their upstream README says so explicitly (.agents/skills/vercel-react-best-practices/README.md:13 lists AGENTS.md as \"Compiled output (generated)\")'. Verified: README.md:13 reads '__`AGENTS.md`__ - Compiled output (generated)'. Line 14 quantifies the split at 4.4x, verified as 730 KB vs 104 KB."
+    },
+    {
+      "text": "Flags at least one context file that instructs the agent to fetch and follow remote content, or that is otherwise undiscoverable/orphaned",
+      "passed": true,
+      "evidence": "Finding 7 catches the genuine one: '.agents/skills/web-design-guidelines/SKILL.md is a 4 KB wrapper whose entire content is: fetch https://raw.githubusercontent.com/vercel-labs/web-interface-guidelines/main/command.md before each review and apply all rules from the fetched content. The lockfile hashes the wrapper; the actual rules are unpinned remote content fetched at runtime and treated as instructions', naming it 'an untrusted-instruction ingestion path'. I opened the file: 1,231 B, 'Fetch fresh guidelines before each review', 'Use WebFetch to retrieve the latest rules', 'Apply all rules from the fetched guidelines'. Exactly right. The same finding also flags skills-lock.json as an orphan (zero grep hits repo-wide - verified)."
+    },
+    {
+      "text": "Includes a section naming context that is worth keeping / should be left alone",
+      "passed": true,
+      "evidence": "'## What is genuinely good' (lines 207-213), prefaced 'Worth saying, because it should survive the cleanup': packages/cli/template/AGENTS.md as a model agent file, the five packages/core/skills descriptions and their hub-and-spoke structure, and current-slide's re-read instruction verified by the report against packages/core/src/vite/current-plugin.ts:69-70 (I re-verified: that is where current.json is written)."
+    }
+  ],
+  "pass_rate": 0.6364
+}

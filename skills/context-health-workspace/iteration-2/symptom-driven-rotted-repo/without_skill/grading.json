@@ -1,0 +1,62 @@
+{
+  "eval_name": "symptom-driven-rotted-repo",
+  "condition": "without_skill",
+  "expectations": [
+    {
+      "text": "Reports an always-on TOTAL in tokens AND as a percentage of the context window (not just a per-file byte size)",
+      "passed": false,
+      "evidence": "The report contains no token figure at all - no per-file count, no total, no window percentage. Its cost language is entirely qualitative ('Filler that costs context and buys nothing', section 7). Nothing to satisfy this assertion with."
+    },
+    {
+      "text": "Cited line numbers and counts are factually correct against the actual files",
+      "passed": false,
+      "evidence": "Two clear citation errors plus one loose claim. (1) Line 21, the very first evidence table: '| `AGENTS.md` | 6 | `- ALWAYS use npm to install dependencies.`' - AGENTS.md line 6 is 'Set timeout to 60s for all network calls'; the npm rule is line 7. Confirmed against the fixture and the stated ground truth. (2) Line 95: 'Five of the twelve bullets in CLAUDE.md shout' and 'When ~40% of rules are maximum priority' - the actual figure is 4 shouting rules out of 11 (CLAUDE.md lines 7-17), i.e. 36%. Ironically the report's own list in the same sentence names only four markers. (3) Line 115: 'Eleven commits landed afterward, all of them in src/' - 11 commits do follow c96e1d2, but e055a82 'spacer' is an empty commit touching nothing, so 'all of them in src/' is not true. Correct citations do exist (CLAUDE.md:4, :9; AGENTS.md:3; architecture.md:2; the 9/2/1/1 churn ranking; router.ts deleted in 30d2f16), but the two wrong ones sit in the report's headline tables."
+    },
+    {
+      "text": "Did not create, modify or delete any file in the target repo",
+      "passed": true,
+      "evidence": "externally verified"
+    },
+    {
+      "text": "Makes no recommendation about code implementation, naming, architecture or formatting",
+      "passed": true,
+      "evidence": "Recommendations stay on prose and enforcement: reconcile the package-manager prose, commit a lockfile and packageManager field, collapse AGENTS.md/CLAUDE.md, delete dangling references and unverifiable facts, strip emphasis, document handler.ts. Recommendation 10 ('Add real lint and format scripts ..., a pre-commit hook, and branch protection on main') is tooling/enforcement, not code implementation, naming, architecture or formatting. No code-quality advice about the .ts stubs."
+    },
+    {
+      "text": "Findings are prioritized by severity, and P3-level items are kept to table rows rather than full prose sections",
+      "passed": false,
+      "evidence": "No severity scheme at all - findings are numbered sections 1-8 with no P-levels or severity tags, and the closing 'Recommendations' list is only 'in rough priority order'. The P3-level material gets full prose sections rather than table rows: section 5 'Stale facts that were never true, or are no longer true' (the '12 services' and Jest lines) and section 7 'Filler that costs context and buys nothing' ('Think step by step', 'You are an expert TypeScript engineer') are each their own ## prose section with bullets and commentary paragraphs, and appear in no table."
+    },
+    {
+      "text": "Opens with a direct one-sentence answer to the question the user actually asked",
+      "passed": true,
+      "evidence": "Line 6, immediately under the title and repo path: 'Short version: Claude isn't ignoring your rule. It's receiving three different answers to \"which package manager?\" in the same context window' - a direct answer to the symptom that was asked about."
+    },
+    {
+      "text": "Identifies the package-manager contradiction (pnpm in CLAUDE.md vs npm in AGENTS.md)",
+      "passed": true,
+      "evidence": "Section 1's table (lines 18-22) sets 'CLAUDE.md | 7 | - ALWAYS use pnpm to install dependencies.' against 'AGENTS.md | 6 | - ALWAYS use npm to install dependencies.', and 1(a) is headed 'AGENTS.md contradicts CLAUDE.md head-on ... Two rules, both marked ALWAYS, mutually exclusive.' The contradiction is identified correctly (the AGENTS.md line number is wrong - graded separately under the citations assertion)."
+    },
+    {
+      "text": "Explains the mechanism: contradictory instructions get resolved arbitrarily, or bloat causes rules to be lost",
+      "passed": true,
+      "evidence": "Line 29-31: 'Nothing in either file says which one wins. There is no principled way for the model to resolve this, so the outcome is effectively arbitrary - which is exactly the \"it just does whatever\" you're seeing.' Line 33-37 adds the demonstration-beats-directive mechanism, and lines 56-58 add the credibility mechanism: 'When a model reads a rule file and can verify one of its claims is false, it rationally discounts the rest of the file.'"
+    },
+    {
+      "text": "Correctly states that unscoped .claude/rules/*.md files load automatically at launch (does NOT claim they need an @ import)",
+      "passed": false,
+      "evidence": "Directly contradicts the ground truth. Section 3 is titled '`.claude/rules/style.md` is probably never loaded at all' and asserts (lines 63-65): 'Claude Code auto-loads CLAUDE.md and nested CLAUDE.md files; it does not walk `.claude/rules/*.md` and pull it into context on its own - that content reaches the model only if something imports it or the model happens to open the file.' It then builds a conclusion on the error ('most likely dead text') and recommendation 4 repeats it: 'Either wire up `.claude/rules/style.md` with an `@` import, or inline it.' Unscoped .claude/rules/*.md files do load automatically at launch."
+    },
+    {
+      "text": "Flags emphasis saturation and the timeout 30s-vs-60s conflict",
+      "passed": true,
+      "evidence": "Both. Section 6 'Emphasis inflation' (lines 93-102): 'When ~40% of rules are maximum priority, emphasis carries no information ... your pnpm rule is marked ALWAYS, and so is the npm rule that overrides it.' Timeout: section 2's drift table line 53 - 'Network timeout | 30s | **60s**'. (The counts inside the emphasis section are wrong - graded under the citations assertion - but the defect is flagged.)"
+    },
+    {
+      "text": "Names at least two further real defects (dead 'npm run lint', missing src/api/legacy.ts, model cruft, or the drifted service count)",
+      "passed": true,
+      "evidence": "Well past two. Section 4's table names the dead 'npm run lint' ('No lint script in package.json' - verified), src/api/legacy.ts ('Never existed in the entire git history' - verified), the unexecutable formatter instruction, and the deleted src/api/router.ts. Section 5 names the drifted service count ('12 services ... the repo contains three source files and no services directory' - verified) and the Jest claim. Section 7 names the model cruft."
+    }
+  ],
+  "pass_rate": 0.6364
+}

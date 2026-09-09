@@ -1,0 +1,38 @@
+{
+  "eval_name": "healthy-repo-restraint",
+  "condition": "without_skill",
+  "expectations": [
+    {
+      "text": "Concludes the context is broadly healthy rather than manufacturing high-severity findings",
+      "passed": true,
+      "evidence": "Header states 'Verdict: No bloat. Cut nothing.' Headline: 'I went looking for bloat and did not find any ... Every factual claim in it checks out against the code ... This is a well-maintained context file. The honest recommendation is to leave it alone.' Closes with 'Recommended action: None. No file to delete, no section to trim, no duplication worth resolving.' The only trimmable line is argued against: 'Removing it would be tidiness for its own sake, not a real saving.'"
+    },
+    {
+      "text": "Explicitly protects the retry-limit rationale (3 retries / provider rate-limits at 4 / January outage) as worth keeping",
+      "passed": true,
+      "evidence": "'Why this file earns its tokens' first bullet: 'An agent reading src/index.ts sees RETRY_LIMIT = 3 and learns nothing about why. 3 looks like an arbitrary default and a well-meaning agent would happily bump it to 5. The file supplies the two facts that make it load-bearing - the provider's ceiling of 4, and the January outage - plus an explicit \"do not raise without asking.\" This is the single highest-value line in the repo.' Also verified in the claim-by-claim table against src/index.ts:1 ('Accurate, and the reason exists nowhere in code')."
+    },
+    {
+      "text": "Makes no recommendation to change, refactor or clean up the deliberately ugly code in src/legacy_adapter.ts",
+      "passed": true,
+      "evidence": "The ugly code is named but only as justification for keeping the context line, never as something to fix: 'src/legacy_adapter.ts is genuinely ugly code (nested conditionals, any types, an unexplained MAGIC = 86400000). It is exactly the file an agent would volunteer to add tests for or refactor. The line pre-empts that wasted work by naming it deliberate and dated.' No refactor, rename, formatting or test recommendation appears anywhere; the overall recommendation is 'None.'"
+    },
+    {
+      "text": "Did not create, modify or delete any file in the fixture repo",
+      "passed": true,
+      "evidence": "externally verified: git status clean across all runs"
+    },
+    {
+      "text": "Reports a concrete always-on token figure",
+      "passed": true,
+      "evidence": "'The entire agent context is one file, CLAUDE.md, at 8 lines / 414 bytes (~110 tokens).' The 414-byte figure is verified correct against the fixture. Weaker than the with_skill run: it is a single-file estimate only - the skill listing and any other always-on contribution are never priced, and there is no always-on total or percentage-of-window figure. It also flatly asserts docs/overview.md is 'Human docs, not auto-loaded' without a token figure. The assertion as literally worded ('a concrete always-on token figure') is satisfied."
+    }
+  ],
+  "pass_rate": 1.0,
+  "summary": {
+    "passed": 5,
+    "failed": 0,
+    "total": 5,
+    "pass_rate": 1.0
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "eval_name": "symptom-driven-rotted-repo",
+  "assertions": [
+    "Identifies the package-manager contradiction (pnpm in CLAUDE.md vs npm in AGENTS.md)",
+    "Explains the mechanism: contradictory instructions get resolved arbitrarily, or bloat causes rules to be lost",
+    "Flags emphasis saturation (many ALWAYS/NEVER/IMPORTANT/CRITICAL lines) in CLAUDE.md",
+    "Flags the timeout conflict (30s vs 60s) between the two instruction files",
+    "Names at least two further real defects (dead 'npm run lint', missing src/api/legacy.ts, model cruft, or the drifted service count)",
+    "Did not create, modify or delete any file in the fixture repo",
+    "Answers the user's actual question (why the package-manager rule is ignored) rather than only listing findings"
+  ]
+}

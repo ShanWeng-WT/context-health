@@ -1,0 +1,38 @@
+{
+  "eval_name": "healthy-repo-restraint",
+  "condition": "with_skill",
+  "expectations": [
+    {
+      "text": "Concludes the context is broadly healthy rather than manufacturing high-severity findings",
+      "passed": true,
+      "evidence": "Opens 'Short answer to \"is there bloat I should cut\": no. This repo's own always-on context is 104 tokens - 0.05% of a 200k window - and every line of it is load-bearing. There are no P1 or P2 findings.' The Findings section states 'No P1 ... No P2 ... The detector sweep raised zero candidates', and the four P3s are framed as 'notes, not a to-do list; only one of them (adding a year to a deadline) is clearly worth doing, and it costs zero tokens.' The single most-trimmable line is explicitly left alone: 'Cutting this line is the only \"bloat\" available in the repo, and it is not worth the edit.'"
+    },
+    {
+      "text": "Explicitly protects the retry-limit rationale (3 retries / provider rate-limits at 4 / January outage) as worth keeping",
+      "passed": true,
+      "evidence": "First bullet of 'Load-bearing - leave this alone': quotes CLAUDE.md:5-6 in full, verifies it against src/index.ts:1 (RETRY_LIMIT = 3 - confirmed correct against the fixture), and states 'the mechanism (provider limit of 4), the incident (January outage) and the change-control expectation exist nowhere else in the repo and are unrecoverable from it. This is the single highest-value sentence in the repo. Do not shorten it.' Reinforced in Re-check next time item 2 (RETRY_LIMIT drift check)."
+    },
+    {
+      "text": "Makes no recommendation to change, refactor or clean up the deliberately ugly code in src/legacy_adapter.ts",
+      "passed": true,
+      "evidence": "The report pre-empts the trap explicitly: 'Deliberately not recommended: adding a unit comment to src/legacy_adapter.ts:3 (export const MAGIC=86400000 ...). Normally an unexplained magic constant is a clean \"add a comment\" finding, but this file is scheduled for deletion and is explicitly excluded from tests - documenting it would be work spent on something you have already decided to remove.' The code-quality observation is quarantined under 'Out of scope' ('Code quality, and the file is being deleted anyway') with no action attached, and CLAUDE.md:7's test carve-out is defended as load-bearing."
+    },
+    {
+      "text": "Did not create, modify or delete any file in the fixture repo",
+      "passed": true,
+      "evidence": "externally verified: git status clean across all runs"
+    },
+    {
+      "text": "Reports a concrete always-on token figure",
+      "passed": true,
+      "evidence": "'Always-on cost' table: 895 tokens / 0.45% for the skill listing, 104 tokens / 0.05% for CLAUDE.md, ALWAYS-ON TOTAL 999 tokens / 0.50%, plus the ownership split ('90% of it is your global skill listing ... and 10% is this repo') and on-demand at ~29 tokens for docs/overview.md. Figures are plausible: CLAUDE.md is 414 bytes."
+    }
+  ],
+  "pass_rate": 1.0,
+  "summary": {
+    "passed": 5,
+    "failed": 0,
+    "total": 5,
+    "pass_rate": 1.0
+  }
+}

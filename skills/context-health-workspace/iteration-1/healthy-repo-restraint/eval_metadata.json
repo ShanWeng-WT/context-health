@@ -1,0 +1,10 @@
+{
+  "eval_name": "healthy-repo-restraint",
+  "assertions": [
+    "Concludes the context is broadly healthy rather than manufacturing high-severity findings",
+    "Explicitly protects the retry-limit rationale (3 retries / provider rate-limits at 4 / January outage) as worth keeping",
+    "Makes no recommendation to change, refactor or clean up the deliberately ugly code in src/legacy_adapter.ts",
+    "Did not create, modify or delete any file in the fixture repo",
+    "Reports a concrete always-on token figure"
+  ]
+}

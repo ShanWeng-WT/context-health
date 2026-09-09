@@ -1,0 +1,373 @@
+{
+  "metadata": {
+    "skill_name": "context-health",
+    "skill_path": "<path/to/skill>",
+    "executor_model": "<model-name>",
+    "analyzer_model": "<model-name>",
+    "timestamp": "2026-09-08T11:04:50Z",
+    "evals_run": [
+      0,
+      1,
+      2
+    ],
+    "runs_per_configuration": 3
+  },
+  "runs": [
+    {
+      "eval_id": 0,
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 8,
+        "failed": 0,
+        "total": 8,
+        "time_seconds": 817.4,
+        "tokens": 152967,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Reports a concrete always-on token figure for the repo (a number, not a vague claim)",
+          "passed": true,
+          "evidence": "Lines 11-17: an 'Always-on cost' table giving 1,081 tokens / 0.54% for the skill listing, 2 tokens for CLAUDE.md, and a bolded ALWAYS-ON TOTAL of 1,083 tokens / 0.54%. It further splits out what is repo-owned ('only ~186 tokens are repo-owned') and prices the healthy counterfactual (~1,400 always-on tokens). On-demand is separately quantified at ~90,489 tokens across 38 files."
+        },
+        {
+          "text": "Identifies that CLAUDE.md is a dead/unmaterialized symlink whose entire content is the literal string 'AGENTS.md'",
+          "passed": true,
+          "evidence": "P1-1 (lines 30-51): 'Quoted - the entire content of CLAUDE.md, all 9 bytes of it:' followed by a fenced block containing exactly AGENTS.md, backed by 'git config core.symlinks -> false' and 'git ls-files -s CLAUDE.md -> 120000 ...'. Verified correct against ground truth (9-byte file, core.symlinks=false)."
+        },
+        {
+          "text": "Flags that the AGENTS.md file(s) are not actually read by Claude Code because nothing bridges them",
+          "passed": true,
+          "evidence": "P1-1: 'Every session on this machine starts with CLAUDE.md contributing the literal string AGENTS.md and nothing else. The agent never sees ... It does not fail loudly - it just quietly behaves like a repo with no instructions.' The fix names the missing bridge: 'Replace the CLAUDE.md symlink with a real one-line file containing @AGENTS.md. Claude Code's @import resolves at launch on every platform.'"
+        },
+        {
+          "text": "Every reported finding cites a specific file path",
+          "passed": true,
+          "evidence": "Every finding header carries a path: P1-1 'CLAUDE.md:1'; P1-2 '.claude/skills/pptx/SKILL.md:3'; P2-1 'AGENTS.md:33-43 vs CONTRIBUTING.md:67-104'; P2-2 'README.md:90'; P2-3 'AGENTS.md:23, CONTRIBUTING.md:52, README.md:88'. The P3 table has a dedicated Location column populated for all 8 rows (e.g. 'apps/demo/README.md:38', 'packages/cli/template/README.md:38', 'apps/web/README.md:1-45')."
+        },
+        {
+          "text": "Did not create, modify or delete any tracked file in D:/Projects/open-slide",
+          "passed": true,
+          "evidence": "externally verified: git status clean across all runs"
+        },
+        {
+          "text": "Includes a section naming context that is worth keeping / should be left alone",
+          "passed": true,
+          "evidence": "Dedicated section 'Load-bearing - leave this alone' (line 228), prefaced 'Named explicitly so a cleanup pass does not take them out with the noise.' Ten named items with paths and reasons, e.g. 'AGENTS.md:42 ... Verified against biome.json:13'; 'AGENTS.md:43 - the comments rule. Long, and it should stay long.'; 'current-slide/SKILL.md:11-19 ... Hard-won behavioural knowledge'."
+        },
+        {
+          "text": "Makes no recommendation about code implementation, naming, architecture or formatting",
+          "passed": true,
+          "evidence": "Every Recommend block targets context files or their delivery mechanism: rewrite README.md:90-91 prose, have CONTRIBUTING.md link to AGENTS.md instead of restating it, cut apps/demo/README.md to ~8 lines, remove the vendored pptx skill. Code-level observations are explicitly quarantined: the 'Out of scope' section defers the stale '@open-slide/core': '^0.0.6' pin as 'Different review, not this one.' BORDERLINE noted for the record: P1-1 option 2 suggests 'add a postinstall that runs the same linkOrCopy logic init.ts already ships' - a build-script change - but its subject is materializing context files on Windows, not code quality, naming, architecture or formatting, and it is offered second to a pure git-config fix."
+        },
+        {
+          "text": "Findings are prioritized by severity rather than listed flat",
+          "passed": true,
+          "evidence": "Explicit tiering P1-1, P1-2, P2-1, P2-2, P2-3, then a '### P3 - lower severity' table with a 'Why it is P3' column justifying each demotion. Each finding additionally carries a harm-class x reach tag ('Misleading x always-on', 'Conflicting x always-on') and a confidence rating (high / medium)."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 1,
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 7,
+        "failed": 0,
+        "total": 7,
+        "time_seconds": 596.5,
+        "tokens": 110340,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Identifies the package-manager contradiction (pnpm in CLAUDE.md vs npm in AGENTS.md)",
+          "passed": true,
+          "evidence": "P1-1 quotes both sides with correct line numbers: 'CLAUDE.md:7 - ALWAYS use pnpm to install dependencies.' against 'AGENTS.md:7 - ALWAYS use npm to install dependencies.' Line numbers verified against the fixture: both rules really are on line 7 of their files."
+        },
+        {
+          "text": "Explains the mechanism: contradictory instructions get resolved arbitrarily, or bloat causes rules to be lost",
+          "passed": true,
+          "evidence": "Two distinct mechanisms, both stated. (a) Arbitrary resolution - P1-3: 'both of these files genuinely load into Claude Code every session, and nothing states which wins. Asked to add a test, the agent must pick arbitrarily.' (b) Credibility discount - P1-2: 'Two falsified claims in the first four lines is enough for the model to treat the whole file as unreliable background rather than as instructions - at which point your correct rules ... get the same discount as the wrong ones.' Also P1-1's 'Modeled behaviour beats stated behaviour' (three npm examples vs one pnpm rule) and 'The repo supplies no tiebreak' (no lockfile, no packageManager field) - both verified true against the fixture."
+        },
+        {
+          "text": "Flags emphasis saturation (many ALWAYS/NEVER/IMPORTANT/CRITICAL lines) in CLAUDE.md",
+          "passed": true,
+          "evidence": "P2-1 'Emphasis saturation: 4 of 11 rules shout, so none of them does', quoting CLAUDE.md:7-10 and reporting '4, against 15 non-blank lines (27%) and 11 rule lines (36%)'. Counts verified exactly against the fixture: CLAUDE.md has 11 rule bullets (lines 7-17), 4 of which carry ALWAYS/NEVER/IMPORTANT+MUST/CRITICAL, and 15 non-blank lines."
+        },
+        {
+          "text": "Flags the timeout conflict (30s vs 60s) between the two instruction files",
+          "passed": true,
+          "evidence": "P1-4 table row: 'network timeout | :13 \"Set timeout to 30s\" | :6 \"Set timeout to 60s\" | unknowable - grep -rn \"timeout\" finds no timeout in any code, only in these two docs'. Escalated again in Missing/X2: 'CLAUDE.md:13 says 30s, AGENTS.md:6 says 60s, and neither says why', with the fix being to attach the mechanism. Line numbers verified correct."
+        },
+        {
+          "text": "Names at least two further real defects (dead 'npm run lint', missing src/api/legacy.ts, model cruft, or the drifted service count)",
+          "passed": true,
+          "evidence": "All four are named, each with verification. P1-2 table: 'npm run lint' = 'Dead command ... package.json defines only build and test'; 'src/api/legacy.ts' = 'Dead path ... The file never existed in the history'; '12 services' = 'Drifted count ... It is a single package, not a 12-service monorepo'; 'Jest' = 'Dead + conflicting'. Model cruft is P3-1 ('Think step by step') and P3-2 ('You are an expert TypeScript engineer'). Beyond the listed set it also catches the deleted src/api/router.ts and the never-existent src/api/missing.ts (P2-4) with git evidence."
+        },
+        {
+          "text": "Did not create, modify or delete any file in the fixture repo",
+          "passed": true,
+          "evidence": "externally verified: git status clean across all runs"
+        },
+        {
+          "text": "Answers the user's actual question (why the package-manager rule is ignored) rather than only listing findings",
+          "passed": true,
+          "evidence": "Opens with a dedicated 'Short answer to your question' section before any finding: 'Your package-manager rule is not being ignored because the agent is careless. It is being ignored because CLAUDE.md argues against itself, and because the file has spent its credibility.' It then names the durable fix ('The fix that will actually hold is not a louder rule. It is one line of enforcement in package.json plus a lockfile') and closes with a re-check item aimed at the same question ('Did the package-manager decision get enforced, or only re-stated?'). Several findings tie back explicitly ('This is the mechanism you are experiencing', 'the pnpm rule is one shout in a row of four')."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 2,
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 5,
+        "failed": 0,
+        "total": 5,
+        "time_seconds": 413.4,
+        "tokens": 86541,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Concludes the context is broadly healthy rather than manufacturing high-severity findings",
+          "passed": true,
+          "evidence": "Opens 'Short answer to \"is there bloat I should cut\": no. This repo's own always-on context is 104 tokens - 0.05% of a 200k window - and every line of it is load-bearing. There are no P1 or P2 findings.' The Findings section states 'No P1 ... No P2 ... The detector sweep raised zero candidates', and the four P3s are framed as 'notes, not a to-do list; only one of them (adding a year to a deadline) is clearly worth doing, and it costs zero tokens.' The single most-trimmable line is explicitly left alone: 'Cutting this line is the only \"bloat\" available in the repo, and it is not worth the edit.'"
+        },
+        {
+          "text": "Explicitly protects the retry-limit rationale (3 retries / provider rate-limits at 4 / January outage) as worth keeping",
+          "passed": true,
+          "evidence": "First bullet of 'Load-bearing - leave this alone': quotes CLAUDE.md:5-6 in full, verifies it against src/index.ts:1 (RETRY_LIMIT = 3 - confirmed correct against the fixture), and states 'the mechanism (provider limit of 4), the incident (January outage) and the change-control expectation exist nowhere else in the repo and are unrecoverable from it. This is the single highest-value sentence in the repo. Do not shorten it.' Reinforced in Re-check next time item 2 (RETRY_LIMIT drift check)."
+        },
+        {
+          "text": "Makes no recommendation to change, refactor or clean up the deliberately ugly code in src/legacy_adapter.ts",
+          "passed": true,
+          "evidence": "The report pre-empts the trap explicitly: 'Deliberately not recommended: adding a unit comment to src/legacy_adapter.ts:3 (export const MAGIC=86400000 ...). Normally an unexplained magic constant is a clean \"add a comment\" finding, but this file is scheduled for deletion and is explicitly excluded from tests - documenting it would be work spent on something you have already decided to remove.' The code-quality observation is quarantined under 'Out of scope' ('Code quality, and the file is being deleted anyway') with no action attached, and CLAUDE.md:7's test carve-out is defended as load-bearing."
+        },
+        {
+          "text": "Did not create, modify or delete any file in the fixture repo",
+          "passed": true,
+          "evidence": "externally verified: git status clean across all runs"
+        },
+        {
+          "text": "Reports a concrete always-on token figure",
+          "passed": true,
+          "evidence": "'Always-on cost' table: 895 tokens / 0.45% for the skill listing, 104 tokens / 0.05% for CLAUDE.md, ALWAYS-ON TOTAL 999 tokens / 0.50%, plus the ownership split ('90% of it is your global skill listing ... and 10% is this repo') and on-demand at ~29 tokens for docs/overview.md. Figures are plausible: CLAUDE.md is 414 bytes."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 0,
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.75,
+        "passed": 6,
+        "failed": 2,
+        "total": 8,
+        "time_seconds": 981.1,
+        "tokens": 156053,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Reports a concrete always-on token figure for the repo (a number, not a vague claim)",
+          "passed": false,
+          "evidence": "The string 'token' does not appear anywhere in the report (grep -in token returns zero hits). All sizing is bytes/words/KB ('3,149 B / 466 w', '730 KB / 54,681 w', '108,261 B / 13,174 w') or characters ('a 756-character trigger magnet'). Byte and word counts are not a token figure, and the report never separates an always-on tier from an on-demand tier numerically at all."
+        },
+        {
+          "text": "Identifies that CLAUDE.md is a dead/unmaterialized symlink whose entire content is the literal string 'AGENTS.md'",
+          "passed": true,
+          "evidence": "TL;DR item 1: 'Claude Code launched at the repo root reads a 9-byte CLAUDE.md whose entire content is the literal string AGENTS.md, and finds zero loadable skills.' Finding 1 repeats: 'CLAUDE.md contains exactly AGENTS.md -- 9 bytes'. Matches ground truth."
+        },
+        {
+          "text": "Flags that the AGENTS.md file(s) are not actually read by Claude Code because nothing bridges them",
+          "passed": true,
+          "evidence": "Finding 1: 'no @ prefix, so Claude Code does not treat it as an import. It is a nine-byte instruction file that says nothing.' Recommendation (b): 'stop committing CLAUDE.md as a symlink and commit a one-line real file containing @AGENTS.md. The import syntax gives you the same single source of truth with zero platform dependency.'"
+        },
+        {
+          "text": "Every reported finding cites a specific file path",
+          "passed": true,
+          "evidence": "All 12 findings cite paths: F1 'packages/cli/src/init.ts:47-55'; F2 lists the contents of the root .claude/skills/; F3 '?? .claude/skills/pptx/' and the root .pptx; F4 '.claude/skills/pptx/SKILL.md'; F5 AGENTS.md vs CONTRIBUTING.md; F6 '.gitignore:8', 'packages/cli/src/init.ts:58-61'; F7 'skills-lock.json'; F8 '.github/workflows/ci.yml'; F9 a per-skill table; F10 'apps/demo/README.md:38', 'README.md:72', 'packages/cli/README.md:20'; F11 apps/demo, apps/web; F12 'packages/cli/template/package.json'."
+        },
+        {
+          "text": "Did not create, modify or delete any tracked file in D:/Projects/open-slide",
+          "passed": true,
+          "evidence": "externally verified: git status clean across all runs"
+        },
+        {
+          "text": "Includes a section naming context that is worth keeping / should be left alone",
+          "passed": true,
+          "evidence": "Section 'What is genuinely good' (line 207): 'Worth saying, because it should survive the cleanup', naming packages/cli/template/AGENTS.md as 'a model agent file', the five packages/core/skills/ with their hub-and-spoke relationship, and the canonical-source-mirrored-by-build-script arrangement."
+        },
+        {
+          "text": "Makes no recommendation about code implementation, naming, architecture or formatting",
+          "passed": false,
+          "evidence": "Several code recommendations. Cleanest violation: finding 12 plus work-order row 10, 'Refresh the stale @open-slide/core pin in the template' - a package.json dependency edit with no context-health bearing, which the report itself concedes 'is harmless at runtime'. Finding 6 is an outright dead-code review: it quotes packages/cli/src/init.ts:58-61 verbatim, argues 'existsSync(claudeMd) is always true and the branch never executes', calls it 'dead code' in the heading, and closes 'Worth a scaffold-on-Windows test either way.' Finding 7 recommends 'add a CI check that the hashes still match'. Finding 9 recommends 'Prune the shadcn skill's evals/, assets/ and agents/openai.yml.'"
+        },
+        {
+          "text": "Findings are prioritized by severity rather than listed flat",
+          "passed": true,
+          "evidence": "Heading '## Findings, worst first' with an explicit severity tag on every finding ('severity: high' x4 incl. one flagged 'high -- confidentiality', 'severity: medium' x5, 'severity: low' x3), plus a 'Suggested order of work' table ranking 10 actions with effort and payoff columns."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 1,
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 7,
+        "failed": 0,
+        "total": 7,
+        "time_seconds": 299.7,
+        "tokens": 69612,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Identifies the package-manager contradiction (pnpm in CLAUDE.md vs npm in AGENTS.md)",
+          "passed": true,
+          "evidence": "Section 1 table: 'CLAUDE.md | 7 | - ALWAYS use pnpm to install dependencies.' vs 'AGENTS.md | 6 | - ALWAYS use npm to install dependencies.' FACTUALLY WRONG line number: the npm rule is on AGENTS.md line 7, not line 6 (line 6 is the 60s timeout). The contradiction itself is correctly identified, so the assertion passes, but the citation is off by one."
+        },
+        {
+          "text": "Explains the mechanism: contradictory instructions get resolved arbitrarily, or bloat causes rules to be lost",
+          "passed": true,
+          "evidence": "Section 1(a): 'Two rules, both marked ALWAYS, mutually exclusive. Nothing in either file says which one wins. There is no principled way for the model to resolve this, so the outcome is effectively arbitrary.' Also 1(b) the modeled-vs-stated mechanism ('Concrete, copyable examples are much stronger behavioral signals than abstract directives'), 1(c) the missing tie-breaker, and section 2's credibility-discount mechanism ('When a model reads a rule file and can verify one of its claims is false, it rationally discounts the rest of the file')."
+        },
+        {
+          "text": "Flags emphasis saturation (many ALWAYS/NEVER/IMPORTANT/CRITICAL lines) in CLAUDE.md",
+          "passed": true,
+          "evidence": "Section 6 'Emphasis inflation': 'Five of the twelve bullets in CLAUDE.md shout: ALWAYS, NEVER, IMPORTANT: ... MUST, CRITICAL. When ~40% of rules are maximum priority, emphasis carries no information.' FACTUALLY WRONG counts: the fixture has 11 rule bullets (lines 7-17), of which 4 shout (36%), not 5 of 12. The phenomenon is correctly flagged so the assertion passes, but both numbers are wrong."
+        },
+        {
+          "text": "Flags the timeout conflict (30s vs 60s) between the two instruction files",
+          "passed": true,
+          "evidence": "Section 2 table row: 'Network timeout | 30s | 60s | - | -'. Flagged, though only as a table cell - unlike the package-manager and Jest rows it gets no discussion, no line citation, and no recommendation of its own beyond the generic 'collapse AGENTS.md and CLAUDE.md' item."
+        },
+        {
+          "text": "Names at least two further real defects (dead 'npm run lint', missing src/api/legacy.ts, model cruft, or the drifted service count)",
+          "passed": true,
+          "evidence": "All four named. Section 4 table: 'src/api/legacy.ts (\"tests live in\") | CLAUDE.md:4 | Never existed in the entire git history' and 'npm run lint | CLAUDE.md:3, AGENTS.md:3 | No lint script in package.json'. Section 5: '\"We currently have 12 services in this monorepo.\" - the repo contains three source files and no services directory.' Section 7 covers the model cruft ('Think step by step', 'You are an expert TypeScript engineer'). It additionally catches the deleted src/api/router.ts and never-existent src/api/missing.ts, and adds a churn ranking showing src/api/handler.ts is the hottest file and appears in zero context files."
+        },
+        {
+          "text": "Did not create, modify or delete any file in the fixture repo",
+          "passed": true,
+          "evidence": "externally verified: git status clean across all runs"
+        },
+        {
+          "text": "Answers the user's actual question (why the package-manager rule is ignored) rather than only listing findings",
+          "passed": true,
+          "evidence": "Titled 'Why Claude ignores your CLAUDE.md' and leads with a direct answer: 'Claude isn't ignoring your rule. It's receiving three different answers to \"which package manager?\" in the same context window, and one of those answers is demonstrated three times as a working command right above the rule that forbids it.' Section 1 is 'The package manager symptom, traced' with three ranked causes, and recommendations 1-2 target that symptom specifically."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 2,
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 5,
+        "failed": 0,
+        "total": 5,
+        "time_seconds": 108.0,
+        "tokens": 51243,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Concludes the context is broadly healthy rather than manufacturing high-severity findings",
+          "passed": true,
+          "evidence": "Header states 'Verdict: No bloat. Cut nothing.' Headline: 'I went looking for bloat and did not find any ... Every factual claim in it checks out against the code ... This is a well-maintained context file. The honest recommendation is to leave it alone.' Closes with 'Recommended action: None. No file to delete, no section to trim, no duplication worth resolving.' The only trimmable line is argued against: 'Removing it would be tidiness for its own sake, not a real saving.'"
+        },
+        {
+          "text": "Explicitly protects the retry-limit rationale (3 retries / provider rate-limits at 4 / January outage) as worth keeping",
+          "passed": true,
+          "evidence": "'Why this file earns its tokens' first bullet: 'An agent reading src/index.ts sees RETRY_LIMIT = 3 and learns nothing about why. 3 looks like an arbitrary default and a well-meaning agent would happily bump it to 5. The file supplies the two facts that make it load-bearing - the provider's ceiling of 4, and the January outage - plus an explicit \"do not raise without asking.\" This is the single highest-value line in the repo.' Also verified in the claim-by-claim table against src/index.ts:1 ('Accurate, and the reason exists nowhere in code')."
+        },
+        {
+          "text": "Makes no recommendation to change, refactor or clean up the deliberately ugly code in src/legacy_adapter.ts",
+          "passed": true,
+          "evidence": "The ugly code is named but only as justification for keeping the context line, never as something to fix: 'src/legacy_adapter.ts is genuinely ugly code (nested conditionals, any types, an unexplained MAGIC = 86400000). It is exactly the file an agent would volunteer to add tests for or refactor. The line pre-empts that wasted work by naming it deliberate and dated.' No refactor, rename, formatting or test recommendation appears anywhere; the overall recommendation is 'None.'"
+        },
+        {
+          "text": "Did not create, modify or delete any file in the fixture repo",
+          "passed": true,
+          "evidence": "externally verified: git status clean across all runs"
+        },
+        {
+          "text": "Reports a concrete always-on token figure",
+          "passed": true,
+          "evidence": "'The entire agent context is one file, CLAUDE.md, at 8 lines / 414 bytes (~110 tokens).' The 414-byte figure is verified correct against the fixture. Weaker than the with_skill run: it is a single-file estimate only - the skill listing and any other always-on contribution are never priced, and there is no always-on total or percentage-of-window figure. It also flatly asserts docs/overview.md is 'Human docs, not auto-loaded' without a token figure. The assertion as literally worded ('a concrete always-on token figure') is satisfied."
+        }
+      ],
+      "notes": []
+    }
+  ],
+  "run_summary": {
+    "with_skill": {
+      "pass_rate": {
+        "mean": 1.0,
+        "stddev": 0.0,
+        "min": 1.0,
+        "max": 1.0
+      },
+      "time_seconds": {
+        "mean": 609.1,
+        "stddev": 202.2945,
+        "min": 413.4,
+        "max": 817.4
+      },
+      "tokens": {
+        "mean": 116616.0,
+        "stddev": 33654.7842,
+        "min": 86541,
+        "max": 152967
+      }
+    },
+    "without_skill": {
+      "pass_rate": {
+        "mean": 0.9167,
+        "stddev": 0.1443,
+        "min": 0.75,
+        "max": 1.0
+      },
+      "time_seconds": {
+        "mean": 462.9333,
+        "stddev": 458.8679,
+        "min": 108.0,
+        "max": 981.1
+      },
+      "tokens": {
+        "mean": 92302.6667,
+        "stddev": 55968.1498,
+        "min": 51243,
+        "max": 156053
+      }
+    },
+    "delta": {
+      "pass_rate": "+0.08",
+      "time_seconds": "+146.2",
+      "tokens": "+24313"
+    }
+  },
+  "notes": []
+}

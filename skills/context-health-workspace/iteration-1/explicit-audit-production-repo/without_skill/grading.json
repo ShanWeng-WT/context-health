@@ -1,0 +1,47 @@
+{
+  "eval_name": "explicit-audit-production-repo",
+  "condition": "without_skill",
+  "expectations": [
+    {
+      "text": "Reports a concrete always-on token figure for the repo (a number, not a vague claim)",
+      "passed": false,
+      "evidence": "The string 'token' does not appear anywhere in the report (grep -in token returns zero hits). All sizing is bytes/words/KB ('3,149 B / 466 w', '730 KB / 54,681 w', '108,261 B / 13,174 w') or characters ('a 756-character trigger magnet'). Byte and word counts are not a token figure, and the report never separates an always-on tier from an on-demand tier numerically at all."
+    },
+    {
+      "text": "Identifies that CLAUDE.md is a dead/unmaterialized symlink whose entire content is the literal string 'AGENTS.md'",
+      "passed": true,
+      "evidence": "TL;DR item 1: 'Claude Code launched at the repo root reads a 9-byte CLAUDE.md whose entire content is the literal string AGENTS.md, and finds zero loadable skills.' Finding 1 repeats: 'CLAUDE.md contains exactly AGENTS.md -- 9 bytes'. Matches ground truth."
+    },
+    {
+      "text": "Flags that the AGENTS.md file(s) are not actually read by Claude Code because nothing bridges them",
+      "passed": true,
+      "evidence": "Finding 1: 'no @ prefix, so Claude Code does not treat it as an import. It is a nine-byte instruction file that says nothing.' Recommendation (b): 'stop committing CLAUDE.md as a symlink and commit a one-line real file containing @AGENTS.md. The import syntax gives you the same single source of truth with zero platform dependency.'"
+    },
+    {
+      "text": "Every reported finding cites a specific file path",
+      "passed": true,
+      "evidence": "All 12 findings cite paths: F1 'packages/cli/src/init.ts:47-55'; F2 lists the contents of the root .claude/skills/; F3 '?? .claude/skills/pptx/' and the root .pptx; F4 '.claude/skills/pptx/SKILL.md'; F5 AGENTS.md vs CONTRIBUTING.md; F6 '.gitignore:8', 'packages/cli/src/init.ts:58-61'; F7 'skills-lock.json'; F8 '.github/workflows/ci.yml'; F9 a per-skill table; F10 'apps/demo/README.md:38', 'README.md:72', 'packages/cli/README.md:20'; F11 apps/demo, apps/web; F12 'packages/cli/template/package.json'."
+    },
+    {
+      "text": "Did not create, modify or delete any tracked file in D:/Projects/open-slide",
+      "passed": true,
+      "evidence": "externally verified: git status clean across all runs"
+    },
+    {
+      "text": "Includes a section naming context that is worth keeping / should be left alone",
+      "passed": true,
+      "evidence": "Section 'What is genuinely good' (line 207): 'Worth saying, because it should survive the cleanup', naming packages/cli/template/AGENTS.md as 'a model agent file', the five packages/core/skills/ with their hub-and-spoke relationship, and the canonical-source-mirrored-by-build-script arrangement."
+    },
+    {
+      "text": "Makes no recommendation about code implementation, naming, architecture or formatting",
+      "passed": false,
+      "evidence": "Several code recommendations. Cleanest violation: finding 12 plus work-order row 10, 'Refresh the stale @open-slide/core pin in the template' - a package.json dependency edit with no context-health bearing, which the report itself concedes 'is harmless at runtime'. Finding 6 is an outright dead-code review: it quotes packages/cli/src/init.ts:58-61 verbatim, argues 'existsSync(claudeMd) is always true and the branch never executes', calls it 'dead code' in the heading, and closes 'Worth a scaffold-on-Windows test either way.' Finding 7 recommends 'add a CI check that the hashes still match'. Finding 9 recommends 'Prune the shadcn skill's evals/, assets/ and agents/openai.yml.'"
+    },
+    {
+      "text": "Findings are prioritized by severity rather than listed flat",
+      "passed": true,
+      "evidence": "Heading '## Findings, worst first' with an explicit severity tag on every finding ('severity: high' x4 incl. one flagged 'high -- confidentiality', 'severity: medium' x5, 'severity: low' x3), plus a 'Suggested order of work' table ranking 10 actions with effort and payoff columns."
+    }
+  ],
+  "pass_rate": 0.75
+}
