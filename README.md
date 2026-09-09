@@ -48,14 +48,10 @@ CLAUDE.md" triggers it too.
    command someone else can re-run. Findings without both are dropped.
 5. **Reports to a file.** The audit is written to `context-health-<date>.md`; the chat
    gets the one-sentence answer, the always-on total and its recoverable share, one
-   line per P1, and the path. Findings are prioritized by harm × reach — token cost is
-   a peer harm here, ranked by measured size — and carry four fields: claim, quote,
-   evidence, recommendation, with a token delta and what the shorter version still
-   carries. A cut counts as **recoverable** only when every line in it fails the
-   load-bearing test; otherwise the recommendation is to **salvage** — compress it,
-   move it down a tier, merge the duplicate copies — so the tokens come back and the
-   knowledge stays. Hence the explicit *leave this alone* section, and what's
-   **missing**: an audit that only subtracts is doing half the job.
+   line per P1, and the path. Findings rank by harm × reach, carry four fields — claim,
+   quote, evidence, recommendation — and every cut that shortens text states its token
+   delta and what the shorter version still carries. The report names what to **leave
+   alone** and what is **missing** as explicitly as what to cut.
 
 ## Layout
 
@@ -71,6 +67,10 @@ skills/context-health/
 └── scripts/
     ├── ledger.py                 always-on token accounting
     └── sweep.py                  the ten detectors
+
+evals/evals.json                  the three eval cases and their assertions
+skills/context-health-workspace/  raw eval runs per iteration
+research/                         verbatim research-agent output behind SOURCES.md
 ```
 
 Both scripts need only Python 3 (plus git, for staleness) and emit `--json` for CI
@@ -103,12 +103,14 @@ Three cases — an explicit audit of a real production monorepo, a symptom-led r
 a fixture with planted defects, and a deliberately healthy repo with deliberately ugly
 code — each run with and without the skill.
 
-Iteration 1 scored 100% with the skill against a 91.7% baseline. The baseline was
+Iteration 1 scored 100% with the skill against a 92% baseline. The baseline was
 strong; the separation came from token accounting, scope discipline, factual precision
 on citations, and correctness about what actually loads. Iteration 2 closed four gaps
-the baseline had exposed. Details in `SOURCES.md` §5b.
+the baseline had exposed and scored 97% against 65% on the expanded assertions.
+Iteration 3 changed the deliverable to a file plus chat summary and has not been
+re-scored. Details in `SOURCES.md` §5b.
 
 Detector precision was tuned against a repo believed healthy — the naive sweep produced
-233 candidates there, of which almost none were real; the tuned sweep produces 14 —
+233 candidates there, of which almost none were real; the tuned sweep produces 15 —
 then recall was confirmed against planted defects. **A detector that fires on a
 well-maintained repo is broken.**

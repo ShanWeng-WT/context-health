@@ -1,35 +1,26 @@
 # Keep or cut
 
 The judgment half of the audit. The detectors find candidates; this decides what they
-mean. Read it before writing your first keep-or-cut recommendation.
+mean.
 
-## Four probes
+## Two refinements to the load-bearing test
 
-Apply in order. The first one that answers settles it.
+The test itself lives in SKILL.md: would removing this line change what the agent does
+or believes? Two refinements sharpen it at the margins.
 
-**1. The deletion probe.** Would removing this line change what the agent does or
-believes? If nothing changes, it is paying rent and returning nothing.
+**Derivable is about descriptions, not judgments.** The repo cannot go stale relative
+to itself, so a description of the repo is strictly worse than the repo. A *judgment*
+about the repo is not derivable at all. "The parser lives in `src/parse/`" is
+derivable. "Changes almost always land in these four files" is not.
 
-**2. The derivability probe.** Could the agent find this out cheaply by looking? The
-repo cannot go stale relative to itself, so a description of the repo is strictly worse
-than the repo — unless the description is a *judgment* about the repo, which is not
-derivable at all. "The parser lives in `src/parse/`" is derivable. "Changes almost
-always land in these four files" is not.
+**For comments, ask whether it uses different words.** A comment that restates its own
+signature in English adds nothing. A comment using *different words* — about units,
+bounds, caller obligations, why the ordering matters — adds what the signature
+structurally cannot express.
 
-**3. The different-words probe.** Does this say something the code cannot? A comment
-that restates its own signature in English adds nothing. A comment using *different
-words* — about units, bounds, caller obligations, why the ordering matters — adds what
-the signature structurally cannot express.
-
-**4. The reach probe.** Which tier is it in? Marginal content in an on-demand file is a
-rounding error. The same content always-on is a per-turn tax forever. When a line is
-genuinely useful but not useful *every session*, the recommendation is to move it down
-a tier, not to delete it.
-
-Probes 1–3 decide *whether* text carries anything; probe 4 decides *what a reduction is
-worth*. The order is fixed, and size never promotes a cut past probes 1–3 — the biggest
-file in the ledger stays if its lines change what the agent does. Salvage it instead:
-compress it, or move it down a tier.
+Size never promotes a cut past the test — the biggest file in the ledger stays if its
+lines change what the agent does. Salvage it instead: compress it, or move it down a
+tier.
 
 ## Protect this
 
@@ -54,7 +45,7 @@ noise. Name these explicitly in the report so that does not happen.
   bearing, what to be careful near.
 
 A dense 200-word paragraph carrying three of these is better context than twenty
-crisp lines carrying none. **Optimize useful information per token, not token count.**
+crisp lines carrying none.
 
 ## Cut this
 

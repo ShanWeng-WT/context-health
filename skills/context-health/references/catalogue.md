@@ -385,6 +385,14 @@ Instructions that apply to one directory sitting in the root file.
 An `AGENTS.md` with no CLAUDE.md bridge; a `CONVENTIONS.md` no tool is configured to
 read; a file shadowed by an override. Pure cost, zero effect.
 
+### S5 — Legacy format
+`.cursorrules` instead of `.cursor/rules/`, or a `.clinerules` file where a directory is
+now expected.
+
+### S6 — Unstable prefix
+Timestamps, versions or generated content near the top of an always-on file. Busts the
+cached prefix for everything after it, which is a real cost multiplier.
+
 ### S7 — Undiscoverable context
 Context the tool will never look for: a skill directory below the root when only the
 root is scanned, a rules file in a non-standard location, a filename not on the tool's
@@ -401,15 +409,6 @@ A lockfile, manifest or index referencing context that no longer exists, or refe
 by nothing.
 
 *Trap:* it may be consumed by a script rather than the agent. Check before reporting.
-
-### S5 — Legacy format
-`.cursorrules` instead of `.cursor/rules/`, or a `.clinerules` file where a directory is
-now expected.
-
-### S6 — Unstable prefix
-Timestamps, versions or generated content near the top of an always-on file. Busts the
-cached prefix for everything after it, which is a real cost multiplier.
-
 ---
 
 ## Missing

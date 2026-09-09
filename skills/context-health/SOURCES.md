@@ -231,7 +231,7 @@ were:
 | `commands` | 30, ~24 false | 4 | match only inside code spans and fences, command must start the line — `make` matches English prose otherwise |
 | `conflicts` | 32, mostly TOC-vs-heading | 1 | skip headings, TOC entries and tables; exclude files inside skill folders from the always-on set |
 | `external` | 5 findings, 4 false | 1, the true positive | require the fetch verb and a live URL in the same few lines; exclude placeholder hosts, pinned URLs, and negated lines — "NEVER fetch raw files from GitHub" is advice *against* the defect |
-| whole sweep | 233 candidates | 15 | the above, combined |
+| whole sweep | 233 candidates | 15 (20 with the comment pass, now on by default) | the above, combined |
 
 The lesson generalizes: **a detector that fires on a well-maintained repo is broken.**
 Tune against a repo you believe is healthy, then confirm recall against planted
@@ -285,6 +285,10 @@ requires `git -C <repo>`.
 
 **Method note.** Baseline runs need the skill genuinely uninstalled, not merely
 unmentioned — otherwise the control auto-triggers it and the comparison is worthless.
+
+Iteration 2, against the expanded assertion set: **97% with skill, 65% baseline.** The
+baseline fell because the new assertions target exactly what an unaided agent skips —
+token accounting, ownership of the on-demand tier, fetch-and-obey, discoverability.
 
 **Iteration 3 changed the deliverable, so the scores above predate the current
 assertions.** The report became a file with a summary in chat, and the per-finding

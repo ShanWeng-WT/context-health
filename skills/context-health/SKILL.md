@@ -1,6 +1,6 @@
 ---
 name: context-health
-description: Audits the agent-facing context in a repository — CLAUDE.md, AGENTS.md, cursor and copilot rules, skills, docs and code comments — for stale, contradictory, duplicated and low-signal text, prices it in always-on tokens, and says how much is recoverable without losing anything. Diagnoses and prioritizes; never edits. Use when someone asks to audit, review, prune or clean up their agent context, CLAUDE.md, AGENTS.md, rules files or docs, or wants to cut a repo's token cost. Use it just as readily when they describe the symptom instead of asking for an audit: the agent ignores instructions, follows outdated guidance, contradicts itself between files, or has been getting quietly worse on a repo they have worked in for months.
+description: Audit a repo's agent-facing context — CLAUDE.md, AGENTS.md, rules, skills, docs, code comments — for context rot, and price the always-on tokens. Use when the user asks to audit, prune or clean up their CLAUDE.md, agent context or docs, or wants to cut a repo's token cost; or when they describe the symptom — the agent ignores instructions, follows stale guidance, contradicts itself between files, or has got quietly worse on a repo they have worked in for months.
 ---
 
 # Context health
@@ -11,10 +11,9 @@ just gets a little worse each month — it follows a rule that stopped being tru
 misses the one rule that mattered because forty others were shouting too.
 
 You are diagnosing that. **Report, do not repair.** The deliverable is a Markdown file
-holding a prioritized diagnosis the user can act on; they decide what changes. This
-isn't timidity — a context file is a team artifact whose lines usually encode a reason
-you cannot see from inside the repo, and the failure mode of an eager pruner is
-deleting the one sentence that was holding back a recurring bug.
+holding a prioritized diagnosis the user can act on; they decide what changes. A
+context file is a team artifact whose lines usually encode a reason you cannot see from
+inside the repo.
 
 ## What counts as your subject
 
@@ -23,7 +22,7 @@ subagent definitions, READMEs, architecture notes, ADRs, and code comments.
 
 Code is your **evidence**, not your subject. You read it constantly — to check whether
 a documented path exists, whether a command still resolves, whether a described
-behaviour is still the behaviour — and you cite it in findings. But every finding you
+behaviour is still the behaviour — and you cite it in findings. Every finding you
 report is about the prose. If your recommendation changes a function, a name, a file
 layout or a formatting choice, it belongs in a different review; note it in one line
 under Out of scope and move on.
@@ -61,7 +60,8 @@ in every session and returning nothing.
 Text fails the test in three ways, and naming which one you found is most of the
 finding: it is **derivable** (the agent can get it from the repo faster than from your
 description of the repo — directory trees, dependency lists, restated `package.json`
-scripts), it is **default** (the model already behaves this way, so the line buys
+scripts; a *judgment* about the repo, such as where changes usually land, is not
+derivable), it is **default** (the model already behaves this way, so the line buys
 nothing — "write clean code", "think step by step", "read the file before editing"),
 or it is **dead** (it describes something that no longer exists).
 
@@ -80,9 +80,10 @@ come back and the knowledge stays. Reserve deletion for text that was carrying n
 Optimize useful information per token, in both directions: recommend adding context
 where its absence is causing repeated mistakes.
 
-`references/keep-or-cut.md` holds the full rubric — what is worth keeping even when it
-looks like clutter, and where credible sources genuinely disagree. Read it before you
-write your first keep-or-cut recommendation.
+`references/keep-or-cut.md` holds the full rubric — what to protect even when it looks
+like clutter, the salvage move worked through, where credible sources genuinely
+disagree, and what is and is not worth a P1. Read it before you write your first
+keep-or-cut recommendation.
 
 ## Severity
 
@@ -136,17 +137,16 @@ Then characterize the on-demand tier, which the ledger totals but does not judge
 questions, because each has produced real findings that no detector catches:
 
 - **Who wrote it?** Split the total into authored, vendored (copied-in third-party
-  skills and guides) and generated. Vendored context dwarfing your own is worth naming:
-  the agent is mostly reading someone else's opinions about someone else's codebase.
+  skills and guides) and generated (catalogue T6, T7). Vendored context dwarfing your
+  own is worth naming.
 - **Can it be reached?** A skill in a directory the tool never scans, a file no config
-  points at, a rules file shadowed by an override — these cost storage and return
-  nothing. Undiscoverable context is the same failure as absent context, minus the
-  honesty.
+  points at, a rules file shadowed by an override (S4, S7, S8). Undiscoverable context
+  is the same failure as absent context, minus the honesty.
 - **Does it pull in anything from outside?** A context file that tells the agent to
   fetch a URL and follow what it finds has turned unpinned remote content into
-  instructions (catalogue M9) — the one context defect that is also a security defect.
-  Take this from the sweep's `external` detector, not from skimming: these stubs run to
-  a few hundred bytes and read as trivial, which is exactly how one gets waved through.
+  instructions (M9) — the one context defect that is also a security defect. Take this
+  from the sweep's `external` detector: these stubs run to a few hundred bytes and read
+  as trivial, which is exactly how one gets waved through.
 
 Done when: every always-on file has a number, you can state the total as a percentage
 of the window, and you can say who owns the on-demand bulk.
@@ -157,12 +157,8 @@ of the window, and you can say who owns the on-demand bulk.
 python scripts/sweep.py <repo>            # --no-comments to skip the source-comment pass
 ```
 
-Ten detectors, all on by default — broken paths, vanished commands, cross-file
-duplication, docs whose subject moved on, emphasis saturation, three shapes of
-contradiction, perishable claims, retired-model prompt scaffolding, fetch-and-obey,
-and comment smells (commented-out code, changelog-in-comment, perishable
-measurements). Each candidate arrives with the evidence that raised it and the trap
-that would make it a false positive.
+Ten detectors, all on by default. Each candidate arrives with the evidence that raised
+it and the trap that would make it a false positive.
 
 These are leads, not findings. If Python is unavailable, `references/catalogue.md`
 carries the equivalent shell command for every detector.
@@ -176,10 +172,14 @@ the one place where full reading is cheap and necessary, because the worst findi
 are invisible to greps: a rule that quietly contradicts the repo's actual practice, a
 procedure that should be a skill, a paragraph that made sense two architectures ago.
 
+Read against the catalogue's **Structural** (S1–S8) and **Missing** (X1–X3) classes as
+you go: none of them has a detector, so this read is the only place they get caught.
+
 Read skill and subagent descriptions too: those load every session, and overlapping
 descriptions make the agent pick the wrong skill or miss the right one.
 
-Done when: every file in the ledger's always-on table has been read in full.
+Done when: every file in the ledger's always-on table has been read in full, and each
+S and X class has been considered.
 
 ### 4. Verify each candidate
 
@@ -209,10 +209,9 @@ those is dropped, not downgraded.
 **The report is a file; the chat gets a summary.** Write it to
 `context-health-<YYYY-MM-DD>.md` in the repo root, or wherever the user asked. Then say
 in chat, and nowhere near full length: the one-sentence answer, the always-on total
-and how much of it is recoverable, one line per P1, and the path to the file. Nothing
-else — no findings pasted back, no recommendations restated. A report in the transcript
-is read once and scrolled past; a file is diffed against the next run and handed to
-whoever actually edits the prose.
+and how much of it is recoverable, one line per P1, and the path to the file. A report
+in the transcript is read once and scrolled past; a file is diffed against the next
+run and handed to whoever actually edits the prose.
 
 Structure the file like this:
 
@@ -250,17 +249,14 @@ Code issues noticed in passing, one line each. Not this audit's business.
 The two or three things most likely to have rotted by the next audit.
 ```
 
-The "leave this alone" section is not padding. Without it an audit reads as a mandate
-to delete, and the predictable outcome is a user who prunes the rationale along with
-the noise and cannot tell you six months later why retries are capped at three.
+Name what to protect as specifically as what to cut. Without the "leave this alone"
+section an audit reads as a mandate to delete, and the user prunes the rationale along
+with the noise.
 
-Recommend salvage, not rewrites. When two rules conflict, the usual fix is to add the
-missing carve-out to one of them — both rules survive, and the ambiguity does not.
-
-Four fields per finding, and no fifth. You will want to add a paragraph explaining the
-mechanism — what the agent will actually do wrong. Don't: the claim, the quote and the
-evidence carry it, and a reader who wants the mechanism will ask. Hold it for that
-question rather than smuggling it into **Evidence** or **Recommend**.
+Four fields per finding. The claim, the quote and the evidence carry the mechanism —
+what the agent will actually do wrong — so hold that explanation for the reader who
+asks for it rather than adding a fifth field or folding it into **Evidence** or
+**Recommend**.
 
 Done when: the file exists at a path you have named, every section is present, every
 finding has all four fields, every reducing recommendation carries a token delta that
