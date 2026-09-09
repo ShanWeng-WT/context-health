@@ -128,7 +128,10 @@ Costly, Conflicting).
 
 **Severity ordering: incorrect > missing > noisy.** ✅
 → *Drives:* the P1/P2/P3 scheme, and the inclusion of a Missing section so the audit
-is not purely subtractive.
+is not purely subtractive. **Deviation:** the ordering is kept for *correctness*
+harms, but "noisy" is not floored at P3 here — a measured, recoverable cut of ≥2k
+always-on tokens reaches P1, because the source ranks harm *kinds* and says nothing
+about magnitude, and a per-turn tax paid forever is not a footnote.
 [humanlayer](https://www.humanlayer.dev/blog/writing-a-good-claude-md)
 
 **Context rot is empirically measured**, across 18 models, and even a single distractor
@@ -170,6 +173,8 @@ side in a live debate.
 | Every finding needs a re-runnable command | Prevents the plausible-sounding hallucinated finding, the main failure mode of a prose-judging audit |
 | Traps co-located with detectors | The FP trap is only useful at the moment of judging that finding |
 | Explicit "leave this alone" section | Without it an audit reads as a mandate to delete, and users prune rationale along with noise |
+| Token cost as a peer harm, ranked by size | Reduction is a stated goal of the audit, and cost is the one harm that arrives with a number attached — so it ranks on magnitude rather than sitting below the correctness harms. Bounded by the load-bearing test: a cut is *recoverable* only when every line in it fails that test, and the default recommendation is *salvage* (compress, move a tier, merge copies) so the tokens come back without the knowledge going with them |
+| Comment sweep on by default | Code comments are part of the agent-facing prose the audit exists to judge; leaving them behind a flag meant the comment half of the rubric usually went unused. Cost is bounded — tracked source files only, capped at 4000 |
 | Confidence separate from severity | A high-severity finding you are 60% sure of is still worth reporting — but say so |
 | Missing section | Sources agree missing information outranks noise, yet every audit tool found was purely subtractive |
 | Disagreements surfaced, not resolved | Several debates are genuinely open; a repo on the far side of one may be there deliberately |

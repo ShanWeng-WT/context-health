@@ -35,22 +35,27 @@ CLAUDE.md" triggers it too.
    context), unscoped rules, MEMORY.md, the skill listing, and other tools'
    equivalents. Then characterizes the on-demand tier by who owns it — authored,
    vendored, or generated.
-2. **Sweeps for candidates.** Ten detectors — nine by default, plus source comments
-   under `--comments`: broken paths, vanished commands, cross-file duplication, docs
-   whose subject moved on, emphasis saturation, three shapes of contradiction,
+2. **Sweeps for candidates.** Ten detectors, all on by default (`--no-comments` skips
+   the source-comment pass): broken paths, vanished commands, cross-file duplication,
+   docs whose subject moved on, emphasis saturation, three shapes of contradiction,
    perishable claims, prompt scaffolding written for a model generation that no longer
-   needs it, and fetch-and-obey — a context file that tells the agent to pull in
-   unpinned remote content and follow it.
+   needs it, fetch-and-obey — a context file that tells the agent to pull in unpinned
+   remote content and follow it — and comment smells: commented-out code, changelog
+   in a comment, perishable measurements.
 3. **Reads the always-on set in full** — small by definition, and where the worst
    findings hide from greps.
 4. **Verifies.** Each candidate must survive its named false-positive trap and carry a
    command someone else can re-run. Findings without both are dropped.
 5. **Reports to a file.** The audit is written to `context-health-<date>.md`; the chat
-   gets the one-sentence answer, the always-on total, one line per P1, and the path.
-   Findings are prioritized by harm × reach and carry four fields — claim, quote,
-   evidence, recommendation — with a token delta per cut, an explicit *leave this
-   alone* section, and what's **missing**: an audit that only subtracts is doing half
-   the job.
+   gets the one-sentence answer, the always-on total and its recoverable share, one
+   line per P1, and the path. Findings are prioritized by harm × reach — token cost is
+   a peer harm here, ranked by measured size — and carry four fields: claim, quote,
+   evidence, recommendation, with a token delta and what the shorter version still
+   carries. A cut counts as **recoverable** only when every line in it fails the
+   load-bearing test; otherwise the recommendation is to **salvage** — compress it,
+   move it down a tier, merge the duplicate copies — so the tokens come back and the
+   knowledge stays. Hence the explicit *leave this alone* section, and what's
+   **missing**: an audit that only subtracts is doing half the job.
 
 ## Layout
 

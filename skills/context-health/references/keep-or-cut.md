@@ -26,6 +26,11 @@ rounding error. The same content always-on is a per-turn tax forever. When a lin
 genuinely useful but not useful *every session*, the recommendation is to move it down
 a tier, not to delete it.
 
+Probes 1–3 decide *whether* text carries anything; probe 4 decides *what a reduction is
+worth*. The order is fixed, and size never promotes a cut past probes 1–3 — the biggest
+file in the ledger stays if its lines change what the agent does. Salvage it instead:
+compress it, or move it down a tier.
+
 ## Protect this
 
 The failure mode of a context audit is a user who prunes the rationale along with the
@@ -135,6 +140,8 @@ Findings that are worth a P1:
 - Two always-on files giving different timeouts for the same call.
 - A CLAUDE.md that is a nine-byte unmaterialized symlink, so all guidance is silently
   absent while the team believes it is loaded.
+- A 3k-token always-on section that is a directory tree plus a restated `scripts`
+  block — derivable end to end, so all 3k are recoverable and none of the meaning is.
 
 Findings that are not worth reporting:
 

@@ -1,6 +1,6 @@
 ---
 name: context-health
-description: Audits the agent-facing context in a repository — CLAUDE.md, AGENTS.md, cursor and copilot rules, skills, subagent prompts, READMEs, architecture notes and code comments — for stale, contradictory, duplicated and low-signal text, and prices what it costs in always-on tokens. Diagnoses and prioritizes; never edits. Use when someone asks to audit, review, prune or clean up their agent context, CLAUDE.md, AGENTS.md or rules files, asks which documentation is worth keeping, or wants to cut the token cost of a repo. Use it just as readily when they describe the symptom rather than asking for an audit: the agent ignores instructions, follows outdated guidance, contradicts itself between files, keeps re-explaining things it should already know, or has been getting quietly worse on a repo they have worked in for months.
+description: Audits the agent-facing context in a repository — CLAUDE.md, AGENTS.md, cursor and copilot rules, skills, docs and code comments — for stale, contradictory, duplicated and low-signal text, prices it in always-on tokens, and says how much is recoverable without losing anything. Diagnoses and prioritizes; never edits. Use when someone asks to audit, review, prune or clean up their agent context, CLAUDE.md, AGENTS.md, rules files or docs, or wants to cut a repo's token cost. Use it just as readily when they describe the symptom instead of asking for an audit: the agent ignores instructions, follows outdated guidance, contradicts itself between files, or has been getting quietly worse on a repo they have worked in for months.
 ---
 
 # Context health
@@ -44,9 +44,10 @@ rules, subdirectory CLAUDE.md, reference files, ordinary docs.
 
 The same paragraph costs wildly different amounts depending on which tier it sits in.
 A document loaded on demand can afford to repeat itself for clarity; an always-on
-preamble cannot. So a finding's severity depends on its tier, and the single highest-
-leverage recommendation you can usually make is not "delete this" but "move this down
-a tier" — from always-on prose into a skill, a path-scoped rule, or a linked doc.
+preamble cannot. So a finding's severity depends on its tier — and the highest-leverage
+recommendation available to you is usually a tier move: always-on prose into a skill, a
+path-scoped rule, or a linked doc. Same words, same usefulness, none of the per-turn
+tax.
 
 ## Load-bearing
 
@@ -64,12 +65,20 @@ scripts), it is **default** (the model already behaves this way, so the line buy
 nothing — "write clean code", "think step by step", "read the file before editing"),
 or it is **dead** (it describes something that no longer exists).
 
-Length is not the test, and shorter is not the goal. A long paragraph explaining why
-retries are capped at three — because the upstream provider rate-limits at four and
-the incident in the postmortem came from a retry storm — is dense, load-bearing
-context that saves an agent from reintroducing a bug. Cut it and you have made the
-file shorter and the repo worse. Optimize useful information per token, in both
-directions: recommend adding context where its absence is causing repeated mistakes.
+Length is not the test. Reclaiming always-on tokens is a real goal of this audit —
+weight is the one defect you can put a number on — and that number is bounded by the
+test above. A cut is **recoverable** only when every line in it fails the test. A cut
+that takes knowledge with it is not a win at any size.
+
+So **salvage** before you delete. A long paragraph explaining why retries are capped at
+three — the provider rate-limits at four, and the postmortem's outage was a retry
+storm — is dense, load-bearing context; deleting it makes the file shorter and the repo
+worse. Salvaging it does not: rewrite it down to its load-bearing sentence, move the
+session-rare rule into a skill, collapse the third copy of a rule into one. The tokens
+come back and the knowledge stays. Reserve deletion for text that was carrying nothing.
+
+Optimize useful information per token, in both directions: recommend adding context
+where its absence is causing repeated mistakes.
 
 `references/keep-or-cut.md` holds the full rubric — what is worth keeping even when it
 looks like clutter, and where credible sources genuinely disagree. Read it before you
@@ -79,16 +88,29 @@ write your first keep-or-cut recommendation.
 
 Severity is derived, never asserted. Two factors:
 
-**Harm** — Misleading (the agent will act on something false) beats Conflicting (two
-rules disagree and nothing resolves them, so the agent picks one arbitrarily) beats
-Diluting (noise crowds out the rules that matter) beats Costly (pure token weight).
+**Harm** — what the text does wrong. **Misleading**: the agent will act on something
+false. **Conflicting**: two rules disagree and nothing resolves them, so the agent
+picks one arbitrarily. **Diluting**: noise crowds out the rules that matter.
+**Costly**: the text is accurate and unread, and bills for the privilege every turn.
 
 **Reach** — always-on beats on-demand beats incidental.
 
-P1 is misleading or conflicting always-on context. P2 is misleading on-demand context,
-or dilution in the always-on tier. P3 is everything else. Carry **confidence**
-separately from severity: a high-severity finding you are 60% sure of is still worth
-reporting, but say so.
+Misleading and Conflicting rank on harm alone: they corrupt behaviour, so a small
+wrong line outranks a large right one. Diluting and Costly rank on **magnitude** — the
+ledger's token number, weighed against the tier it sits in. Cost is the one harm that
+arrives with a measurement attached, so let the measurement set its priority.
+
+**P1** — misleading or conflicting always-on context; or a recoverable cut worth **≥2k
+always-on tokens, or ≥20% of the always-on total**.
+
+**P2** — misleading on-demand context; dilution in the always-on tier; a cost
+concentration under the P1 bar that still earns a number, such as on-demand bulk that
+every session actually pays for.
+
+**P3** — everything else.
+
+Carry **confidence** separately from severity: a high-severity finding you are 60%
+sure of is still worth reporting, but say so.
 
 ## Running the audit
 
@@ -132,13 +154,15 @@ of the window, and you can say who owns the on-demand bulk.
 ### 2. Sweep for candidates
 
 ```bash
-python scripts/sweep.py <repo>            # add --comments to include source comments
+python scripts/sweep.py <repo>            # --no-comments to skip the source-comment pass
 ```
 
-Ten detectors — broken paths, vanished commands, cross-file duplication, docs whose
-subject moved on, emphasis saturation, three shapes of contradiction, perishable
-claims, retired-model prompt scaffolding, and fetch-and-obey. Each candidate arrives
-with the evidence that raised it and the trap that would make it a false positive.
+Ten detectors, all on by default — broken paths, vanished commands, cross-file
+duplication, docs whose subject moved on, emphasis saturation, three shapes of
+contradiction, perishable claims, retired-model prompt scaffolding, fetch-and-obey,
+and comment smells (commented-out code, changelog-in-comment, perishable
+measurements). Each candidate arrives with the evidence that raised it and the trap
+that would make it a false positive.
 
 These are leads, not findings. If Python is unavailable, `references/catalogue.md`
 carries the equivalent shell command for every detector.
@@ -184,10 +208,11 @@ those is dropped, not downgraded.
 
 **The report is a file; the chat gets a summary.** Write it to
 `context-health-<YYYY-MM-DD>.md` in the repo root, or wherever the user asked. Then say
-in chat, and nowhere near full length: the one-sentence answer, the always-on total,
-one line per P1, and the path to the file. Nothing else — no findings pasted back, no
-recommendations restated. A report in the transcript is read once and scrolled past; a
-file is diffed against the next run and handed to whoever actually edits the prose.
+in chat, and nowhere near full length: the one-sentence answer, the always-on total
+and how much of it is recoverable, one line per P1, and the path to the file. Nothing
+else — no findings pasted back, no recommendations restated. A report in the transcript
+is read once and scrolled past; a file is diffed against the next run and handed to
+whoever actually edits the prose.
 
 Structure the file like this:
 
@@ -197,7 +222,9 @@ Structure the file like this:
 One sentence answering the question they actually asked, before anything else.
 
 ## Always-on cost
-The ledger table, the total, and one sentence on whether that is defensible.
+The ledger table, the total, the recoverable subtotal — how many of those tokens the
+findings below reclaim without losing anything — and one sentence on whether what is
+left is defensible.
 
 ## Findings
 P1 first. Full treatment for each P1; group P2s that share a root cause; the P3s get
@@ -207,7 +234,8 @@ misjudged its severity, so promote it or drop it.
 ### P1-1 — <one-line claim>  ·  `file:line`  ·  <harm> × <reach>  ·  confidence <high/med/low>
 **Quoted:**    the exact offending text
 **Evidence:**  the command and what it returned
-**Recommend:** the surgical change, with a token delta if it is a cut (~900 → ~200)
+**Recommend:** the surgical change — a token delta whenever it reduces
+               (~900 → ~200), plus what the shorter version still carries
 
 ## Load-bearing — leave this alone
 The context that is genuinely earning its tokens, named explicitly.
@@ -226,8 +254,8 @@ The "leave this alone" section is not padding. Without it an audit reads as a ma
 to delete, and the predictable outcome is a user who prunes the rationale along with
 the noise and cannot tell you six months later why retries are capped at three.
 
-Prefer surgical edits over rewrites in every recommendation. When two rules conflict,
-the fix is usually to add the missing carve-out to one of them, not to delete either.
+Recommend salvage, not rewrites. When two rules conflict, the usual fix is to add the
+missing carve-out to one of them — both rules survive, and the ambiguity does not.
 
 Four fields per finding, and no fifth. You will want to add a paragraph explaining the
 mechanism — what the agent will actually do wrong. Don't: the claim, the quote and the
@@ -235,12 +263,14 @@ evidence carry it, and a reader who wants the mechanism will ask. Hold it for th
 question rather than smuggling it into **Evidence** or **Recommend**.
 
 Done when: the file exists at a path you have named, every section is present, every
-finding has all four fields, the report names what to protect as specifically as what
-to cut, and your chat message is a summary rather than a copy.
+finding has all four fields, every reducing recommendation carries a token delta that
+sums into the recoverable subtotal, the report names what to protect as specifically
+as what to cut, and your chat message is a summary rather than a copy.
 
 ## Repeat runs
 
 `--json` on both scripts gives stable output. On a repo audited before, read the last
-`context-health-*.md` first, diff against the previous run, and lead with what changed — new always-on tokens, findings that
-returned after being fixed, and anything the user declined last time (say so once;
-do not re-litigate it).
+`context-health-*.md` first, diff against the previous run, and lead with what
+changed — new always-on tokens, recoverable tokens the user has since reclaimed,
+findings that returned after being fixed, and anything the user declined last time
+(say so once, and leave it there).

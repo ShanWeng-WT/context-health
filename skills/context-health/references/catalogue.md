@@ -20,8 +20,9 @@ fails on any repo containing CJK or UTF-8 punctuation and silently returns nothi
 
 ## Misleading
 
-The agent acts on something false. Highest severity: worse than no documentation,
-because the agent trusts it and stops looking.
+The agent acts on something false. Worse than no documentation, because the agent
+trusts it and stops looking. Ranks on harm alone — a one-line dead command outranks a
+large accurate file.
 
 ### M1 — Dead command
 A documented command that no longer resolves.
@@ -301,8 +302,19 @@ neither can the agent.
 
 ## Costly
 
+Accurate context that nothing reads, billed every turn. Unlike the classes above, this
+one is **measurable**, so it ranks on size — see the P1 bar in SKILL.md's severity
+table. Two things every finding here needs: the number, and what survives the change.
+Salvage first (compress, move a tier, merge the copies); delete only what was carrying
+nothing.
+
 ### T1 — Oversized always-on file
 Report against the documented target for the tool, and always against the ledger total.
+
+*Why it hurts:* every turn of every session pays for it, and the rules that do matter
+compete with the rest for the model's attention. This is the finding most worth an
+exact number: the file's tokens, its share of the always-on total, and what the total
+would be after the recommendation.
 
 ### T2 — Import chain
 `@imports` load at launch, recursively, to a depth limit. Splitting a large file into

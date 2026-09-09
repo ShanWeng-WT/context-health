@@ -11,7 +11,7 @@ Each detector documents its false-positive trap in `TRAPS`. Report the trap
 alongside the finding; a finding whose trap has not been checked is not a finding.
 
 Usage:
-    python sweep.py [REPO] [--json] [--comments] [--only NAME,NAME]
+    python sweep.py [REPO] [--json] [--no-comments] [--only NAME,NAME]
 
 Detectors:
     refs        paths named in docs that do not exist
@@ -23,7 +23,7 @@ Detectors:
     perishable  "currently", "as of <date>", changelog accretion in instructions
     cruft       instructions written for models that no longer need them
     external    context telling the agent to fetch remote content and obey it
-    comments    commented-out code, changelog comments, stale TODOs (--comments)
+    comments    commented-out code, changelog comments, stale TODOs
 """
 
 from __future__ import annotations
@@ -614,7 +614,7 @@ class Sweep:
                 break                 # one finding per file is enough to act on
 
     def comments(self):
-        """Comment smells. Opt-in: this walks source files."""
+        """Comment smells. Walks tracked source files; capped at 4000."""
         code = [p for p in self.tracked if p.suffix.lower() in CODE_EXT]
         cpat = re.compile(r"^\s*(?://|#)\s?(.*)$")
         codeish = re.compile(r"[;{}()\[\]=]|^\s*(?:if|for|while|return|def|function|"
@@ -656,12 +656,12 @@ class Sweep:
     # -----------------------------------------------------------------------
 
     ALL = ["refs", "commands", "dupes", "stale", "emphasis", "conflicts",
-           "perishable", "cruft", "external"]
+           "perishable", "cruft", "external", "comments"]
 
     def run(self, only: list[str] | None) -> None:
         names = only or list(self.ALL)
-        if self.want_comments and "comments" not in names:
-            names.append("comments")
+        if not self.want_comments:
+            names = [n for n in names if n != "comments"]
         for name in names:
             fn = getattr(self, name, None)
             if not fn:
@@ -681,7 +681,7 @@ class Sweep:
         out.append(f"{len(self.findings)} candidates across {len(buckets)} detectors. "
                    "These are leads, not verdicts - each carries the trap that would "
                    "make it a false positive.")
-        for name in self.ALL + ["comments"]:
+        for name in self.ALL:
             fs = buckets.get(name)
             if not fs:
                 continue
@@ -702,7 +702,11 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("repo", nargs="?", default=".")
     ap.add_argument("--json", action="store_true")
-    ap.add_argument("--comments", action="store_true", help="also scan source comments")
+    ap.add_argument("--no-comments", dest="comments", action="store_false",
+                    help="skip the source-comment detector (on by default)")
+    ap.add_argument("--comments", dest="comments", action="store_true",
+                    help=argparse.SUPPRESS)   # accepted for back-compat; now the default
+    ap.set_defaults(comments=True)
     ap.add_argument("--only", default="", help="comma-separated detector names")
     args = ap.parse_args()
 
